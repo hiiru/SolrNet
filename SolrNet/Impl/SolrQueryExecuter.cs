@@ -23,6 +23,7 @@ using System.Linq;
 using System.Xml.Linq;
 using SolrNet.Commands.Parameters;
 using SolrNet.Exceptions;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Utils;
 
 namespace SolrNet.Impl {
@@ -584,6 +585,8 @@ namespace SolrNet.Impl {
             var param = GetAllParameters(q, options);
             var results = new SolrQueryResults<T>();
             var r = connection.Get(Handler, param);
+            var parser = new XmlParserLINQ();
+            var doc = parser.ParseFormat(r);
             var xml = XDocument.Parse(r);
             resultParser.Parse(xml, results);
             return results;
