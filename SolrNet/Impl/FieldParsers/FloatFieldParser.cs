@@ -25,7 +25,7 @@ namespace SolrNet.Impl.FieldParsers {
     /// </summary>
     public class FloatFieldParser : ISolrFieldParser {
         public bool CanHandleSolrType(string solrType) {
-            return solrType == "float" || solrType == "int";
+            return solrType == null || solrType == "float" || solrType == "int";
         }
 
         public bool CanHandleType(Type t) {
@@ -36,13 +36,15 @@ namespace SolrNet.Impl.FieldParsers {
             return float.Parse(value, CultureInfo.InvariantCulture.NumberFormat);
         }
 
-        public static float Parse(XElement field) {
+        public static float Parse(SolrResponseDocumentNode field)
+        {
             if (field == null)
                 throw new ArgumentNullException("field");
             return Parse(field.Value);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
             return Parse(field);
         }
     }

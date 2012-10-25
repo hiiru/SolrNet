@@ -10,20 +10,16 @@ namespace SolrNet.Impl.ResponseParsers {
             this.docParser = docParser;
         }
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
             results.Switch(query: F.DoNothing,
-                           moreLikeThis: r => Parse(xml, r));
+                           moreLikeThis: r => Parse(document, r));
         }
 
-        public void Parse(XDocument xml, SolrMoreLikeThisHandlerResults<T> results) {
-            var resultNode = xml
-                .Element("response")
-                .Elements("result")
-                .FirstOrDefault(e => e.Attribute("name").Value == "match");
-
-            results.Match = resultNode == null ? 
-                default(T) : 
-                docParser.ParseResults(resultNode).FirstOrDefault();
+        public void Parse(SolrResponseDocument document, SolrMoreLikeThisHandlerResults<T> results) {
+            var resultNode = document.Nodes["result"].Nodes["match"];
+            results.Match = resultNode == null ? default(T) : 
+            docParser.ParseResults(resultNode).FirstOrDefault();
         }
     }
 }

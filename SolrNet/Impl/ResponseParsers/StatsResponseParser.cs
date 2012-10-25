@@ -27,13 +27,14 @@ namespace SolrNet.Impl.ResponseParsers {
     /// </summary>
     /// <typeparam name="T">Document type</typeparam>
     public class StatsResponseParser<T> : ISolrResponseParser<T> {
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            results.Switch(query: r => Parse(xml, r),
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            results.Switch(query: r => Parse(document, r),
                            moreLikeThis: F.DoNothing);
         }
 
-        public void Parse(XDocument xml, SolrQueryResults<T> results) {
-            var statsNode = xml.XPathSelectElement("response/lst[@name='stats']");
+        public void Parse(SolrResponseDocument document, SolrQueryResults<T> results) {
+            var statsNode = document.Nodes["stats"];
             if (statsNode != null)
                 results.Stats = ParseStats(statsNode, "stats_fields");
         }
@@ -44,57 +45,56 @@ namespace SolrNet.Impl.ResponseParsers {
         /// <param name="node"></param>
         /// <param name="selector">Start with 'stats_fields'</param>
         /// <returns></returns>
-        public Dictionary<string, StatsResult> ParseStats(XElement node, string selector) {
+        public Dictionary<string, StatsResult> ParseStats(SolrResponseDocumentNode node, string selector) {
             var d = new Dictionary<string, StatsResult>();
-            var mainNode = node.XPathSelectElement(string.Format("lst[@name='{0}']", selector));
-            foreach (var n in mainNode.Elements()) {
-                var name = n.Attribute("name").Value;
-                d[name] = ParseStatsNode(n);
+            var mainNode = node.Nodes[selector];
+            foreach (var n in mainNode.Nodes) {
+                d[n.Key] = ParseStatsNode(n.Value);
             }
 
             return d;
         }
 
-        public IDictionary<string, Dictionary<string, StatsResult>> ParseFacetNode(XElement node) {
+        public IDictionary<string, Dictionary<string, StatsResult>> ParseFacetNode(SolrResponseDocumentNode node)
+        {
             var r = new Dictionary<string, Dictionary<string, StatsResult>>();
-            foreach (var n in node.Elements()) {
-                var facetName = n.Attribute("name").Value;
-                r[facetName] = ParseStats(n.Parent, facetName);
+            foreach (var n in node.Nodes) {
+                r[n.Key] = ParseStats(n.Value, n.Key);
             }
             return r;
         }
 
-        public StatsResult ParseStatsNode(XElement node) {
+        public StatsResult ParseStatsNode(SolrResponseDocumentNode node)
+        {
             var r = new StatsResult();
-            foreach (var statNode in node.Elements()) {
-                var name = statNode.Attribute("name").Value;
-                switch (name) {
+            foreach (var statNode in node.Nodes) {
+                switch (statNode.Key) {
                     case "min":
-						r.Min = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Min = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "max":
-						r.Max = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Max = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "sum":
-						r.Sum = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Sum = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "sumOfSquares":
-						r.SumOfSquares = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.SumOfSquares = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "mean":
-						r.Mean = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Mean = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "stddev":
-						r.StdDev = Convert.ToDouble( statNode.Value, CultureInfo.InvariantCulture );
+                        r.StdDev = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "count":
-						r.Count = Convert.ToInt64( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Count = Convert.ToInt64(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     case "missing":
-						r.Missing = Convert.ToInt64( statNode.Value, CultureInfo.InvariantCulture );
+                        r.Missing = Convert.ToInt64(statNode.Value.Value, CultureInfo.InvariantCulture);
                         break;
                     default:
-                        r.FacetResults = ParseFacetNode(statNode);
+                        r.FacetResults = ParseFacetNode(statNode.Value);
                         break;
                 }
             }

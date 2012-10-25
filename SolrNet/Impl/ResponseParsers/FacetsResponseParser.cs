@@ -28,8 +28,8 @@ namespace SolrNet.Impl.ResponseParsers {
     /// </summary>
     /// <typeparam name="T">Document type</typeparam>
     public class FacetsResponseParser<T> : ISolrAbstractResponseParser<T> {
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            var mainFacetNode = xml.XPathSelectElement("response/lst[@name='facet_counts']");
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results) {
+            var mainFacetNode = document.Nodes["facet_counts"];
             if (mainFacetNode != null) {
                 results.FacetQueries = ParseFacetQueries(mainFacetNode);
                 results.FacetFields = ParseFacetFields(mainFacetNode);
@@ -43,12 +43,12 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IDictionary<string, int> ParseFacetQueries(XElement node) {
+        public IDictionary<string, int> ParseFacetQueries(SolrResponseDocumentNode node)
+        {
             var d = new Dictionary<string, int>();
-            foreach (var fieldNode in node.XPathSelectElement("lst[@name='facet_queries']").Elements()) {
-                var key = fieldNode.Attribute("name").Value;
-                var value = Convert.ToInt32(fieldNode.Value);
-                d[key] = value;
+            foreach (var fieldNode in node.Nodes["facet_queries"].Nodes) {
+                var value = Convert.ToInt32(fieldNode.Value.Value);
+                d[fieldNode.Key] = value;
             }
             return d;
         }
@@ -58,18 +58,17 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IDictionary<string, ICollection<KeyValuePair<string, int>>> ParseFacetFields(XElement node) {
+        public IDictionary<string, ICollection<KeyValuePair<string, int>>> ParseFacetFields(SolrResponseDocumentNode node)
+        {
             var d = new Dictionary<string, ICollection<KeyValuePair<string, int>>>();
-            foreach (var fieldNode in node.XPathSelectElement("lst[@name='facet_fields']").Elements()) {
-                var field = fieldNode.Attribute("name").Value;
+            foreach (var fieldNode in node.Nodes["facet_fields"].Nodes)
+            {
                 var c = new List<KeyValuePair<string, int>>();
-                foreach (var facetNode in fieldNode.Elements()) {
-                    var nameAttr = facetNode.Attribute("name");
-                    var key = nameAttr == null ? "" : nameAttr.Value;
-                    var value = Convert.ToInt32(facetNode.Value);
-                    c.Add(new KeyValuePair<string, int>(key, value));
+                foreach (var facetNode in fieldNode.Value.Nodes) {
+                    var value = Convert.ToInt32(facetNode.Value.Value);
+                    c.Add(new KeyValuePair<string, int>(facetNode.Key ?? "", value));
                 }
-                d[field] = c;
+                d[fieldNode.Key] = c;
             }
             return d;
         }
@@ -79,45 +78,45 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IDictionary<string, DateFacetingResult> ParseFacetDates(XElement node) {
+        public IDictionary<string, DateFacetingResult> ParseFacetDates(SolrResponseDocumentNode node)
+        {
             var d = new Dictionary<string, DateFacetingResult>();
-            var facetDateNode = node.XPathSelectElement("lst[@name='facet_dates']");
+            var facetDateNode = node.Nodes["facet_dates"];
             if (facetDateNode != null) {
-                foreach (var fieldNode in facetDateNode.Elements()) {
-                    var name = fieldNode.Attribute("name").Value;
-                    d[name] = ParseDateFacetingNode(fieldNode);
+                foreach (var fieldNode in facetDateNode.Nodes) {
+                    d[fieldNode.Key] = ParseDateFacetingNode(fieldNode.Value);
                 }
             }
             return d;
         }
 
-        public DateFacetingResult ParseDateFacetingNode(XElement node) {
+        public DateFacetingResult ParseDateFacetingNode(SolrResponseDocumentNode node)
+        {
             var r = new DateFacetingResult();
             var intParser = new IntFieldParser();
-            foreach (var dateFacetingNode in node.Elements()) {
-                var name = dateFacetingNode.Attribute("name").Value;
-                switch (name) {
+            foreach (var dateFacetingNode in node.Nodes) {
+                switch (dateFacetingNode.Key) {
                     case "gap":
-                        r.Gap = dateFacetingNode.Value;
+                        r.Gap = dateFacetingNode.Value.Value;
                         break;
                     case "end":
-                        r.End = DateTimeFieldParser.ParseDate(dateFacetingNode.Value);
+                        r.End = DateTimeFieldParser.ParseDate(dateFacetingNode.Value.Value);
                         break;
                     default:
                         // Temp fix to support Solr 3.1, which has added a new element <date name="start">...</date>
                         // not seen in Solr 1.4 to the facet date response – just ignore this element.
-                        if (dateFacetingNode.Name != "int")
+                        if (!string.IsNullOrEmpty(dateFacetingNode.Value.SolrType) && dateFacetingNode.Value.SolrType != "int")
                             break;
                             
-                        var count = (int) intParser.Parse(dateFacetingNode, typeof (int));
-                        if (name == FacetDateOther.After.ToString())
+                        var count = (int) intParser.Parse(dateFacetingNode.Value, typeof (int));
+                        if (dateFacetingNode.Key == FacetDateOther.After.ToString())
                             r.OtherResults[FacetDateOther.After] = count;
-                        else if (name == FacetDateOther.Before.ToString())
+                        else if (dateFacetingNode.Key == FacetDateOther.Before.ToString())
                             r.OtherResults[FacetDateOther.Before] = count;
-                        else if (name == FacetDateOther.Between.ToString())
+                        else if (dateFacetingNode.Key == FacetDateOther.Between.ToString())
                             r.OtherResults[FacetDateOther.Between] = count;
                         else {
-                            var d = DateTimeFieldParser.ParseDate(name);
+                            var d = DateTimeFieldParser.ParseDate(dateFacetingNode.Key);
                             r.DateResults.Add(KV.Create(d, count));
                         }
                         break;
@@ -131,56 +130,52 @@ namespace SolrNet.Impl.ResponseParsers {
 		/// </summary>
 		/// <param name="node"></param>
 		/// <returns></returns>
-		public IDictionary<string, IList<Pivot>> ParseFacetPivots(XElement node)
+        public IDictionary<string, IList<Pivot>> ParseFacetPivots(SolrResponseDocumentNode node)
 		{
 			var d = new Dictionary<string, IList<Pivot>>();
-			var facetPivotNode = node.XPathSelectElement("lst[@name='facet_pivot']");
+		    var facetPivotNode = node.Nodes["facet_pivot"];
 			if (facetPivotNode != null)
 			{
-				foreach (var fieldNode in facetPivotNode.Elements())
+				foreach (var fieldNode in facetPivotNode.Nodes)
 				{
-					var name = fieldNode.Attribute("name").Value;
-					d[name] = ParsePivotFacetingNode(fieldNode);
+					d[fieldNode.Key] = ParsePivotFacetingNode(fieldNode.Value);
 				}
 			}
 			return d;
 		}
 
 
-		public List<Pivot> ParsePivotFacetingNode(XElement node)
+        public List<Pivot> ParsePivotFacetingNode(SolrResponseDocumentNode node)
 		{
 			List<Pivot> l = new List<Pivot>();
-
-			var pivotNodes = node.XPathSelectElements("lst");
-			if (pivotNodes != null)
+			if (node.Nodes != null)
 			{
-				foreach (var pivotNode in pivotNodes)
+                foreach (var pivotNode in node.Nodes)
 				{
-					l.Add(ParsePivotNode(pivotNode));
+					l.Add(ParsePivotNode(pivotNode.Value));
 				}
 			}
 
 			return l;
 		}
 
-		public Pivot ParsePivotNode(XElement node)
+        public Pivot ParsePivotNode(SolrResponseDocumentNode node)
 		{
 			Pivot pivot = new Pivot();
 
-			pivot.Field = node.XPathSelectElement("str[@name='field']").Value;
-			pivot.Value = node.XPathSelectElement("*[@name='value']").Value;
-			pivot.Count = Convert.ToInt32(node.XPathSelectElement("int[@name='count']").Value);
+            pivot.Field = node.Nodes["field"].Value;
+            pivot.Value = node.Nodes["value"].Value;
+            pivot.Count = Convert.ToInt32(node.Nodes["count"].Value);
 
-
-			var childPivotNodes = node.XPathSelectElement("arr[@name='pivot']");
+            var childPivotNodes = node.Nodes["pivot"];
 			if (childPivotNodes != null)
 			{
 				pivot.HasChildPivots = true;
 				pivot.ChildPivots = new List<Pivot>();
 
-				foreach (var childNode in childPivotNodes.Elements())
+				foreach (var childNode in childPivotNodes.Nodes)
 				{
-					pivot.ChildPivots.Add(ParsePivotNode(childNode));
+					pivot.ChildPivots.Add(ParsePivotNode(childNode.Value));
 				}
 			}
 

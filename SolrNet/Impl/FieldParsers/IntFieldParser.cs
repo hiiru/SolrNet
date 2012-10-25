@@ -25,15 +25,15 @@ namespace SolrNet.Impl.FieldParsers {
     /// </summary>
     public class IntFieldParser : ISolrFieldParser {
         public bool CanHandleSolrType(string solrType) {
-            return solrType == "int";
+            return solrType==null || solrType == "int";
         }
 
         public bool CanHandleType(Type t) {
             return typeof (int) == t;
         }
 
-        public object Parse(XElement field, Type t) {
-            return int.Parse(field.Value, CultureInfo.InvariantCulture.NumberFormat);
+        public object Parse(SolrResponseDocumentNode node, Type t) {
+            return int.Parse(node.Value, CultureInfo.InvariantCulture.NumberFormat);
         }
     }
 }

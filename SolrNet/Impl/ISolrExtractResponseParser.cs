@@ -5,6 +5,6 @@ namespace SolrNet.Impl {
     /// Parses the extract response
     /// </summary>
     public interface ISolrExtractResponseParser {
-        ExtractResponse Parse(XDocument response);
+        ExtractResponse Parse(SolrResponseDocument document);
     }
 }

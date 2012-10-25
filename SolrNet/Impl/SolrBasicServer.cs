@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using SolrNet.Commands;
 using SolrNet.Commands.Parameters;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Schema;
 
 namespace SolrNet.Impl {
@@ -104,14 +105,14 @@ namespace SolrNet.Impl {
 
         public ExtractResponse SendAndParseExtract(ISolrCommand cmd) {
             var r = Send(cmd);
-            var xml = XDocument.Parse(r);
-            return extractResponseParser.Parse(xml);
+            var document = new XmlParserLINQ();
+            return extractResponseParser.Parse(document.ParseFormat(r));
         }
 
         public ResponseHeader SendAndParseHeader(ISolrCommand cmd) {
             var r = Send(cmd);
-            var xml = XDocument.Parse(r);
-            return headerParser.Parse(xml);
+            var document = new XmlParserLINQ();
+            return headerParser.Parse(document.ParseFormat(r));
         }
 
         public ResponseHeader Ping() {

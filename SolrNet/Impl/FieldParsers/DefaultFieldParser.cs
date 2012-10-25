@@ -54,7 +54,8 @@ namespace SolrNet.Impl.FieldParsers {
             return parser.CanHandleType(t);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
             return parser.Parse(field, t);
         }
     }

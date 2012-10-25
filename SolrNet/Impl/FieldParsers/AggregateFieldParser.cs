@@ -44,10 +44,11 @@ namespace SolrNet.Impl.FieldParsers {
             return parsers.Any(p => p.CanHandleType(t));
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode node, Type t)
+        {
             return parsers
-                .Where(p => p.CanHandleType(t) && p.CanHandleSolrType(field.Name.LocalName))
-                .Select(p => p.Parse(field, t))
+                .Where(p => p.CanHandleType(t) && p.CanHandleSolrType(node.SolrType))
+                .Select(p => p.Parse(node, t))
                 .FirstOrDefault();
         }
     }

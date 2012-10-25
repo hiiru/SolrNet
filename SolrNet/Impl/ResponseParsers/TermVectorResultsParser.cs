@@ -28,13 +28,14 @@ namespace SolrNet.Impl.ResponseParsers {
 	/// </summary>
 	/// <typeparam name="T">Document type</typeparam>
 	public class TermVectorResultsParser<T> : ISolrResponseParser<T> {
-		public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-			results.Switch(query: r => Parse(xml, r),
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+			results.Switch(query: r => Parse(document, r),
 						   moreLikeThis: F.DoNothing);
 		}
 
-		public void Parse(XDocument xml, SolrQueryResults<T> results) {
-			var rootNode = xml.XPathSelectElement("response/lst[@name='termVectors']");
+        public void Parse(SolrResponseDocument document, SolrQueryResults<T> results) {
+            var rootNode = document.Nodes["termVectors"];
 			if (rootNode != null)
 				results.TermVectorResults = ParseDocuments(rootNode).ToList();
 		}
@@ -44,44 +45,46 @@ namespace SolrNet.Impl.ResponseParsers {
 		/// </summary>
 		/// <param name="rootNode"></param>
 		/// <returns></returns>
-        public IEnumerable<TermVectorDocumentResult> ParseDocuments(XElement rootNode) {
-			var docNodes = rootNode.Elements("lst");
-
-			foreach (var docNode in docNodes) {
-				var docNodeName = docNode.Attribute("name").Value;
-
-				if (docNodeName == "warnings") {
-					// TODO: warnings
-                } else if (docNodeName == "uniqueKeyFieldName") {
-                    //TODO: support for unique key field name
-                } else {
-                    yield return ParseDoc(docNode);
+        public IEnumerable<TermVectorDocumentResult> ParseDocuments(SolrResponseDocumentNode rootNode) {
+			foreach (var docNode in rootNode.Nodes) {
+                switch (docNode.Key)
+                {
+                    case "warnings":
+                        // TODO: warnings
+                        break;
+                    case "uniqueKeyFieldName":
+                        //TODO: support for unique key field name
+                        break;
+                    default:
+                        yield return ParseDoc(docNode.Value);
+                        break;
                 }
 			}
 		}
 
-		private TermVectorDocumentResult ParseDoc(XElement docNode) {
-			var fieldNodes = docNode.Elements();
+		private TermVectorDocumentResult ParseDoc(SolrResponseDocumentNode docNode) {
+			var fieldNodes = docNode.Nodes;
 		    var uniqueKey = fieldNodes
-		        .Where(x => x.Attribute("name").ValueOrNull() == "uniqueKey")
-		        .Select(x => x.Value)
+		        .Where(x => x.Key == "uniqueKey")
+		        .Select(x => x.Value.Value)
 		        .FirstOrDefault();
 		    var termVectorResults = fieldNodes
-		        .Where(x => x.Attribute("name").ValueOrNull() == "includes")
-		        .SelectMany(ParseField)
+                .Where(x => x.Key == "includes")
+		        .SelectMany(x=>ParseField(x.Value))
                 .ToList();
 
             return new TermVectorDocumentResult(uniqueKey, termVectorResults);
 		}
 		
-		private IEnumerable<TermVectorResult> ParseField(XElement fieldNode) {
-		    return fieldNode.Elements()
-		        .Select(termNode => ParseTerm(termNode, fieldNode.Attribute("name").Value));
+		private IEnumerable<TermVectorResult> ParseField(SolrResponseDocumentNode fieldNode) {
+		    return fieldNode.Nodes
+		        .Select(termNode => ParseTerm(termNode.Value, fieldNode.Name));
 		}
 
-		private TermVectorResult ParseTerm(XElement termNode, string fieldName) {
-		    var nameValues = termNode.Elements()
-                .Select(e => new {name = e.Attribute("name").Value, value = e.Value})
+        private TermVectorResult ParseTerm(SolrResponseDocumentNode termNode, string fieldName)
+        {
+		    var nameValues = termNode.Nodes
+                .Select(e => new {name = e.Key, value = e.Value.Value})
                 .ToList();
 
 		    var tf = nameValues
@@ -99,26 +102,30 @@ namespace SolrNet.Impl.ResponseParsers {
 		        .Select(x => (double?) double.Parse(x.value, CultureInfo.InvariantCulture.NumberFormat))
 		        .FirstOrDefault();
 
-		    var offsets = termNode.Elements().SelectMany(ParseOffsets).ToList();
-            var positions = termNode.Elements().SelectMany(ParsePositions).ToList();
+		    var offsets = termNode.Nodes.Values.SelectMany(ParseOffsets).ToList();
+            var positions = termNode.Nodes.Values.SelectMany(ParsePositions).ToList();
 
             return new TermVectorResult(fieldName, 
-                term: termNode.Attribute("name").Value,
+                term: termNode.Name,
                 tf: tf, df: df, tfIdf: tfidf, 
                 offsets: offsets, positions: positions);
 		}
 
-		private IEnumerable<int> ParsePositions(XElement valueNode) {
+        private IEnumerable<int> ParsePositions(SolrResponseDocumentNode valueNode)
+        {
 		    return from e in new[] {valueNode}
-		           where e.Attribute("name").Value == "positions"
-                   from p in e.Elements()
-		           select int.Parse(p.Value);
+		           where e.Name == "positions"
+                   from p in e.Nodes
+		           select int.Parse(p.Value.Value);
 		}
 
-		private IEnumerable<Offset> ParseOffsets(XElement valueNode) {
-		    return from e in valueNode.Elements()
-		           where e.Attribute("name").Value == "start"
-		           select new Offset(start : int.Parse(e.Value), end : int.Parse(((XElement) e.NextNode).Value));
+        private IEnumerable<Offset> ParseOffsets(SolrResponseDocumentNode valueNode) {
+
+            foreach (var node in valueNode.Nodes.Values) {
+                var start = node.Nodes["start"];
+                var end = node.Nodes["end"];
+                yield return new Offset(int.Parse(start.Value),int.Parse(end.Value));
+            }
 		}
 	}
 }

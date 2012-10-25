@@ -32,10 +32,10 @@ namespace SolrNet.Impl.ResponseParsers {
             this.docParser = docParser;
         }
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            // IsNullOrEmpty part is needed to pass tests -- ptasz3k
-            var resultNode = xml.Element("response").Elements("result").FirstOrDefault(e => String.IsNullOrEmpty((string)e.Attribute("name")) || (string)e.Attribute("name") == "response");
-
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            var resultNode = document.Nodes["result"];
+                
 			//FIX BY klaas 
 			//If resultNode == null exit func
 			//		This can occur when grouped results are returned
@@ -44,8 +44,8 @@ namespace SolrNet.Impl.ResponseParsers {
 				return;
 			}
 
-            results.NumFound = Convert.ToInt32(resultNode.Attribute("numFound").Value);
-            var maxScore = resultNode.Attribute("maxScore");
+            results.NumFound = Convert.ToInt32(resultNode.Nodes["numFound"].Value);
+            var maxScore = resultNode.Nodes["maxScore"];
             if (maxScore != null) {
                 results.MaxScore = double.Parse(maxScore.Value, CultureInfo.InvariantCulture.NumberFormat);
             }

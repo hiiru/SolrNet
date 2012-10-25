@@ -13,8 +13,9 @@ namespace SolrNet.Impl.ResponseParsers {
     public class GroupingResponseParser<T> : ISolrResponseParser<T> {
         private readonly ISolrDocumentResponseParser<T> docParser;
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            results.Switch(query: r => Parse(xml, r),
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            results.Switch(query: r => Parse(document, r),
                            moreLikeThis: F.DoNothing);
         }
 
@@ -27,15 +28,16 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="xml"></param>
         /// <param name="results"></param>
-        public void Parse(XDocument xml, SolrQueryResults<T> results) {
-            var mainGroupingNode = xml.XPathSelectElement("response/lst[@name='grouped']");
+        public void Parse(SolrResponseDocument document, SolrQueryResults<T> results)
+        {
+            var mainGroupingNode = document.Nodes["grouped"];
             if (mainGroupingNode == null)
                 return;
 
             var groupings =
-                from groupNode in mainGroupingNode.Elements()
-                let groupName = groupNode.Attribute("name").Value
-                let groupResults = ParseGroupedResults(groupNode)
+                from groupNode in mainGroupingNode.Nodes
+                let groupName = groupNode.Key
+                let groupResults = ParseGroupedResults(groupNode.Value)
                 select new {groupName, groupResults};
 
             results.Grouping = groupings.ToDictionary(x => x.groupName, x => x.groupResults);
@@ -46,13 +48,14 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="groupNode"></param>
         /// <returns></returns>
-        public GroupedResults<T> ParseGroupedResults(XElement groupNode) {
+        public GroupedResults<T> ParseGroupedResults(SolrResponseDocumentNode groupNode)
+        {
 
-            var ngroupNode = groupNode.XPathSelectElement("int[@name='ngroups']");
+            var ngroupNode = groupNode.Nodes["ngroups"];
 
             return new GroupedResults<T> {
                 Groups = ParseGroup(groupNode).ToList(),
-                Matches = Convert.ToInt32(groupNode.XPathSelectElement("int[@name='matches']").Value),
+                Matches = Convert.ToInt32(groupNode.Nodes["matches"].Value),
                 Ngroups = ngroupNode == null ? null : (int?)int.Parse(ngroupNode.Value),
             };
         }
@@ -62,17 +65,17 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IEnumerable<Group<T>> ParseGroup(XElement node) {
+        public IEnumerable<Group<T>> ParseGroup(SolrResponseDocumentNode node) {
             return
-                from docNode in node.XPathSelectElement("arr[@name='groups']").Elements()
-                let groupValueNode = docNode.XPathSelectElements("*[@name='groupValue']").FirstOrDefault()
-                where groupValueNode != null
-                let groupValue = groupValueNode.Name == "null"
+                from docNode in node.Nodes["groups"].Nodes
+                let groupValueNode = docNode.Value.Nodes["groupValue"].Nodes.FirstOrDefault()
+                where groupValueNode.Value != null
+                let groupValue = groupValueNode.Value.SolrType == "null"
                                      ? "UNMATCHED"
                                      : //These are the results that do not match the grouping
-                                 groupValueNode.Value
-                let resultNode = docNode.XPathSelectElement("result[@name='doclist']")
-                let numFound = Convert.ToInt32(resultNode.Attribute("numFound").Value)
+                                 groupValueNode.Value.Value
+                let resultNode = docNode.Value.Nodes["doclist"] 
+                let numFound = Convert.ToInt32(resultNode.Nodes["numFound"].Value)
                 let docs = docParser.ParseResults(resultNode).ToList()
                 select new Group<T> {
                     GroupValue = groupValue,

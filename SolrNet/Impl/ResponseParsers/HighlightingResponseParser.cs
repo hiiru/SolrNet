@@ -25,13 +25,14 @@ namespace SolrNet.Impl.ResponseParsers {
     /// </summary>
     /// <typeparam name="T">Document type</typeparam>
     public class HighlightingResponseParser<T> : ISolrResponseParser<T> {
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            results.Switch(query: r => Parse(xml, r),
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            results.Switch(query: r => Parse(document, r),
                            moreLikeThis: F.DoNothing);
         }
 
-        public void Parse(XDocument xml, SolrQueryResults<T> results) {
-            var highlightingNode = xml.XPathSelectElement("response/lst[@name='highlighting']");
+        public void Parse(SolrResponseDocument document, SolrQueryResults<T> results) {
+            var highlightingNode = document.Nodes["highlighting"];
             if (highlightingNode != null)
                 results.Highlights = ParseHighlighting(results, highlightingNode);
         }
@@ -42,12 +43,11 @@ namespace SolrNet.Impl.ResponseParsers {
         /// <param name="results"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IDictionary<string, HighlightedSnippets> ParseHighlighting(IEnumerable<T> results, XElement node) {
+        public IDictionary<string, HighlightedSnippets> ParseHighlighting(IEnumerable<T> results, SolrResponseDocumentNode node) {
             var highlights = new Dictionary<string, HighlightedSnippets>();
-            var docRefs = node.Elements("lst");
+            var docRefs = node.Nodes;
             foreach (var docRef in docRefs) {
-                var docRefKey = docRef.Attribute("name").Value;
-                highlights.Add(docRefKey, ParseHighlightingFields(docRef.Elements()));                    
+                highlights.Add(docRef.Key, ParseHighlightingFields(docRef.Value.Nodes.Values));                    
             }
             return highlights;
         }
@@ -57,16 +57,15 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        public HighlightedSnippets ParseHighlightingFields(IEnumerable<XElement> nodes)
+        public HighlightedSnippets ParseHighlightingFields(IEnumerable<SolrResponseDocumentNode> nodes)
         {
             var fields = new HighlightedSnippets();
             foreach (var field in nodes){
-                var fieldName = field.Attribute("name").Value;
                 var snippets = new List<string>();
-                foreach (var str in field.Elements("str")){
-                    snippets.Add(str.Value);
+                foreach (var str in field.Nodes){
+                    snippets.Add(str.Value.Value);
                 }
-                fields.Add(fieldName, snippets);
+                fields.Add(field.Name, snippets);
             }
             return fields;
         }

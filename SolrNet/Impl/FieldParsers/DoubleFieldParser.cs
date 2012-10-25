@@ -25,14 +25,15 @@ namespace SolrNet.Impl.FieldParsers {
     /// </summary>
     public class DoubleFieldParser : ISolrFieldParser {
         public bool CanHandleSolrType(string solrType) {
-            return solrType == "float" || solrType == "int";
+            return solrType == null || solrType == "float" || solrType == "int";
         }
 
         public bool CanHandleType(Type t) {
             return t == typeof (double);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
             return double.Parse(field.Value, CultureInfo.InvariantCulture.NumberFormat);
         }
     }

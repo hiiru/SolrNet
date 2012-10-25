@@ -30,22 +30,23 @@ namespace SolrNet.Impl {
             this.fieldParser = fieldParser;
         }
 
-        public IList<Dictionary<string, object>> ParseResults(XElement parentNode) {
+        public IList<Dictionary<string, object>> ParseResults(SolrResponseDocumentNode parentNode)
+        {
             var results = new List<Dictionary<string, object>>();
-            if (parentNode == null)
+            if (parentNode == null || parentNode.NodeType!=SolrResponseDocumentNodeType.Documents)
                 return results;
-            var nodes = parentNode.Elements("doc");
+            var nodes = parentNode.Documents;
             foreach (var docNode in nodes) {
                 results.Add(ParseDocument(docNode));
             }
             return results;
         }
 
-        public Dictionary<string, object> ParseDocument(XElement node) {
+        public Dictionary<string, object> ParseDocument(SolrResponseDocumentNode node)
+        {
             var doc = new Dictionary<string, object>();
-            foreach (var field in node.Elements()) {
-                string fieldName = field.Attribute("name").Value;
-                doc[fieldName] = fieldParser.Parse(field, typeof(object));
+            foreach (var field in node.Nodes) {
+                doc[field.Key] = fieldParser.Parse(field.Value, typeof(object));
             }
             return doc;
         }

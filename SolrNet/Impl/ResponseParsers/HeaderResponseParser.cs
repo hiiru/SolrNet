@@ -28,8 +28,9 @@ namespace SolrNet.Impl.ResponseParsers {
     /// <typeparam name="T">Document type</typeparam>
     public class HeaderResponseParser<T> : ISolrAbstractResponseParser<T>, ISolrHeaderResponseParser
     {
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            var header = Parse(xml);
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            var header = Parse(document);
             if (header != null)
                 results.Header = header;
         }
@@ -39,20 +40,21 @@ namespace SolrNet.Impl.ResponseParsers {
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public ResponseHeader ParseHeader(XElement node) {
+        public ResponseHeader ParseHeader(SolrResponseDocumentNode node)
+        {
             var r = new ResponseHeader();
-            r.Status = int.Parse(node.XPathSelectElement("int[@name='status']").Value, CultureInfo.InvariantCulture.NumberFormat);
-            r.QTime = int.Parse(node.XPathSelectElement("int[@name='QTime']").Value, CultureInfo.InvariantCulture.NumberFormat);
+            r.Status = int.Parse(node.Nodes["status"].Value, CultureInfo.InvariantCulture.NumberFormat);
+            r.QTime = int.Parse(node.Nodes["QTime"].Value, CultureInfo.InvariantCulture.NumberFormat);
             r.Params = new Dictionary<string, string>();
-            var paramNodes = node.XPathSelectElements("lst[@name='params']/str");
-            foreach (var n in paramNodes) {
-                r.Params[n.Attribute("name").Value] = n.Value;
+            foreach (var n in node.Nodes["params"].Nodes)
+            {
+                r.Params[n.Key] = n.Value.Value;
             }
             return r;
         }
 
-        public ResponseHeader Parse(XDocument response) {
-            var responseHeaderNode = response.XPathSelectElement("response/lst[@name='responseHeader']");
+        public ResponseHeader Parse(SolrResponseDocument document) {
+            var responseHeaderNode = document.Nodes["responseHeader"];
             if (responseHeaderNode != null)
                 return ParseHeader(responseHeaderNode);
             return null;

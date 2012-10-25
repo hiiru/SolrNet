@@ -28,8 +28,9 @@ namespace SolrNet.Impl.ResponseParsers {
     public class MoreLikeThisResponseParser<T> : ISolrResponseParser<T> {
         private readonly ISolrDocumentResponseParser<T> docParser;
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            results.Switch(query: r => Parse(xml, r), 
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
+            results.Switch(query: r => Parse(document, r), 
                            moreLikeThis: F.DoNothing);
         }
 
@@ -37,8 +38,9 @@ namespace SolrNet.Impl.ResponseParsers {
             this.docParser = docParser;
         }
 
-        public void Parse(XDocument xml, SolrQueryResults<T> results) {
-            var moreLikeThis = xml.XPathSelectElement("response/lst[@name='moreLikeThis']");
+        public void Parse(SolrResponseDocument document, SolrQueryResults<T> results)
+        {
+            var moreLikeThis = document.Nodes["moreLikeThis"];
             if (moreLikeThis != null)
                 results.SimilarResults = ParseMoreLikeThis(results, moreLikeThis);
         }
@@ -49,12 +51,11 @@ namespace SolrNet.Impl.ResponseParsers {
         /// <param name="results"></param>
         /// <param name="node"></param>
         /// <returns></returns>
-        public IDictionary<string, IList<T>> ParseMoreLikeThis(IEnumerable<T> results, XElement node) {
+        public IDictionary<string, IList<T>> ParseMoreLikeThis(IEnumerable<T> results, SolrResponseDocumentNode node) {
             var r = new Dictionary<string, IList<T>>();
-            var docRefs = node.Elements("result");
+            var docRefs = node.Nodes["result"].Nodes;
             foreach (var docRef in docRefs) {
-                var docRefKey = docRef.Attribute("name").Value;
-                r[docRefKey] = docParser.ParseResults(docRef);
+                r[docRef.Key] = docParser.ParseResults(docRef.Value);
             }
             return r;
         }

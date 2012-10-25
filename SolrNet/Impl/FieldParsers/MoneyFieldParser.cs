@@ -5,7 +5,7 @@ using System.Xml.Linq;
 namespace SolrNet.Impl.FieldParsers {
     public class MoneyFieldParser : ISolrFieldParser {
         public bool CanHandleSolrType(string solrType) {
-            return solrType == "str";
+            return solrType == null || solrType == "str";
         }
 
         public bool CanHandleType(Type t) {
@@ -20,7 +20,8 @@ namespace SolrNet.Impl.FieldParsers {
             return new Money(decimal.Parse(m[0], CultureInfo.InvariantCulture), currency);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
             return Parse(field.Value);
         }
     }

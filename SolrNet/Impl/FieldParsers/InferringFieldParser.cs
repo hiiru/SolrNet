@@ -32,6 +32,8 @@ namespace SolrNet.Impl.FieldParsers {
         }
 
         public bool CanHandleSolrType(string solrType) {
+            if (solrType==null)
+                return false;
             return true;
         }
 
@@ -54,8 +56,9 @@ namespace SolrNet.Impl.FieldParsers {
             };
         }
 
-        public object Parse(XElement field, Type t) {
-            var type = solrTypes[field.Name.LocalName];
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
+            var type = solrTypes[field.SolrType];
             return parser.Parse(field, type);
         }
     }

@@ -37,14 +37,15 @@ namespace SolrNet.Impl.DocumentPropertyVisitors {
             this.mapper = mapper;
         }
 
-        public void Visit(object doc, string fieldName, XElement field) {
+        public void Visit(object doc, string fieldName, SolrResponseDocumentNode field)
+        {
             var allFields = mapper.GetFields(doc.GetType());
             SolrFieldModel thisField;
             if (!allFields.TryGetValue(fieldName, out thisField))
                 return;
             if (!thisField.Property.CanWrite)
                 return;
-            if (parser.CanHandleSolrType(field.Name.LocalName) &&
+            if (parser.CanHandleSolrType(field.SolrType) &&
                 parser.CanHandleType(thisField.Property.PropertyType)) {
                 var v = parser.Parse(field, thisField.Property.PropertyType);
                 try {

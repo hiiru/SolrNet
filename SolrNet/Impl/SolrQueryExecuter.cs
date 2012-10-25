@@ -587,8 +587,7 @@ namespace SolrNet.Impl {
             var r = connection.Get(Handler, param);
             var parser = new XmlParserLINQ();
             var doc = parser.ParseFormat(r);
-            var xml = XDocument.Parse(r);
-            resultParser.Parse(xml, results);
+            resultParser.Parse(doc, results);
             return results;
         }
 

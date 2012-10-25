@@ -32,7 +32,8 @@ namespace SolrNet.Impl.FieldParsers {
             return t == typeof (decimal);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t)
+        {
             return decimal.Parse(field.Value, NumberStyles.Any, CultureInfo.InvariantCulture.NumberFormat);
         }
     }

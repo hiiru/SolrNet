@@ -39,11 +39,12 @@ namespace SolrNet.Impl {
         /// </summary>
         /// <param name="parentNode"></param>
         /// <returns></returns>
-        public IList<T> ParseResults(XElement parentNode) {
+        public IList<T> ParseResults(SolrResponseDocumentNode parentNode)
+        {
             var results = new List<T>();
-            if (parentNode == null)
+            if (parentNode == null || parentNode.NodeType!=SolrResponseDocumentNodeType.Documents)
                 return results;
-            var nodes = parentNode.Elements("doc");
+            var nodes = parentNode.Documents;
             foreach (var docNode in nodes) {
                 results.Add(ParseDocument(docNode));
             }
@@ -56,11 +57,11 @@ namespace SolrNet.Impl {
         /// <param name="node">response xml node</param>
         /// <param name="fields">document fields</param>
         /// <returns>populated document</returns>
-        public T ParseDocument(XElement node) {
+        public T ParseDocument(SolrResponseDocumentNode node)
+        {
             var doc = activator.Create();
-            foreach (var field in node.Elements()) {
-                string fieldName = field.Attribute("name").Value;
-                propVisitor.Visit(doc, fieldName, field);
+            foreach (var field in node.Nodes) {
+                propVisitor.Visit(doc, field.Key, field.Value);
             }
             return doc;
         }

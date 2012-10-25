@@ -29,6 +29,6 @@ namespace SolrNet.Impl {
         /// </summary>
         /// <param name="parentNode"></param>
         /// <returns></returns>
-        IList<T> ParseResults(XElement parentNode);
+        IList<T> ParseResults(SolrResponseDocumentNode parentNode);
     }
 }

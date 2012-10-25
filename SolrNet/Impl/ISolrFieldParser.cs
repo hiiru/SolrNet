@@ -39,9 +39,9 @@ namespace SolrNet.Impl {
         /// <summary>
         /// Parses a single Solr XML result node
         /// </summary>
-        /// <param name="field">Solr XML result node</param>
+        /// <param name="node">Solr node</param>
         /// <param name="t">Type the node value should be converted to</param>
         /// <returns>Parsed value</returns>
-        object Parse(XElement field, Type t);
+        object Parse(SolrResponseDocumentNode node, Type t);
     }
 }

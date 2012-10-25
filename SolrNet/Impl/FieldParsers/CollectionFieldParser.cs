@@ -33,7 +33,7 @@ namespace SolrNet.Impl.FieldParsers {
         }
 
         public bool CanHandleSolrType(string solrType) {
-            return solrType == "arr";
+            return solrType == null || solrType == "arr";
         }
 
         public bool CanHandleType(Type t) {
@@ -43,51 +43,92 @@ namespace SolrNet.Impl.FieldParsers {
                    !TypeHelper.IsGenericAssignableFrom(typeof (IDictionary<,>), t);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode node, Type t)
+        {
             var genericTypes = t.GetGenericArguments();
             if (genericTypes.Length == 1) {
                 // ICollection<int>, etc
-                return GetGenericCollectionProperty(field, genericTypes);
+                return GetGenericCollectionProperty(node, genericTypes);
             }
             if (t.IsArray) {
                 // int[], string[], etc
-                return GetArrayProperty(field, t);
+                return GetArrayProperty(node, t);
             }
             if (t.IsInterface) {
                 // ICollection
-                return GetNonGenericCollectionProperty(field);
+                return GetNonGenericCollectionProperty(node);
             }
             return null;
         }
 
-        public IList GetNonGenericCollectionProperty(XElement field) {
+        public IList GetNonGenericCollectionProperty(SolrResponseDocumentNode field)
+        {
             var l = new ArrayList();
-            foreach (var arrayValueNode in field.Elements()) {
-                l.Add(valueParser.Parse(arrayValueNode, typeof(object)));
+            if (field.NodeType == SolrResponseDocumentNodeType.Collection) {
+                foreach (var arrayValueNode in field.Collection)
+                {
+                    var node = new SolrResponseDocumentNode("");
+                    node.Value = arrayValueNode;
+                    node.NodeType = SolrResponseDocumentNodeType.Value;
+                    l.Add(valueParser.Parse(node, typeof (object)));
+                }
+            }
+            else
+            {
+                foreach (var arrayValueNode in field.Nodes.Values)
+                {
+                    l.Add(valueParser.Parse(arrayValueNode, typeof(object)));
+                }
             }
             return l;
         }
 
 
-        public Array GetArrayProperty(XElement field, Type t) {
+        public Array GetArrayProperty(SolrResponseDocumentNode field, Type t)
+        {
             // int[], string[], etc
-            var arr = (Array)Activator.CreateInstance(t, new object[] { field.Elements().Count() });
+            var arr = (Array)Activator.CreateInstance(t, new object[] { field.NodeType == SolrResponseDocumentNodeType.Collection?field.Collection.Count:field.Nodes.Count });
             var arrType = Type.GetType(t.ToString().Replace("[]", ""));
             int i = 0;
-            foreach (var arrayValueNode in field.Elements()) {
-                arr.SetValue(valueParser.Parse(arrayValueNode, arrType), i);
-                i++;
+            if (field.NodeType == SolrResponseDocumentNodeType.Collection) {
+                foreach (var arrayValueNode in field.Collection)
+                {
+                    var node = new SolrResponseDocumentNode("");
+                    node.Value = arrayValueNode;
+                    node.NodeType = SolrResponseDocumentNodeType.Value;
+                    arr.SetValue(valueParser.Parse(node, arrType), i);
+                    i++;
+                }
+            }
+            else
+            {
+                foreach (var arrayValueNode in field.Nodes.Values)
+                {
+                    arr.SetValue(valueParser.Parse(arrayValueNode, arrType), i);
+                    i++;
+                }
             }
             return arr;
         }
 
 
-        public IList GetGenericCollectionProperty(XElement field, Type[] genericTypes) {
+        public IList GetGenericCollectionProperty(SolrResponseDocumentNode field, Type[] genericTypes) {
             // ICollection<int>, etc
             var gt = genericTypes[0];
             var l = (IList) Activator.CreateInstance(typeof (List<>).MakeGenericType(gt));
-            foreach (var arrayValueNode in field.Elements()) {
-                l.Add(valueParser.Parse(arrayValueNode, gt));
+            if (field.NodeType == SolrResponseDocumentNodeType.Collection) {
+                foreach (var arrayValueNode in field.Collection) {
+                    var node = new SolrResponseDocumentNode("");
+                    node.Value = arrayValueNode;
+                    node.NodeType=SolrResponseDocumentNodeType.Value;
+                    l.Add(valueParser.Parse(node, gt));
+                }
+            } else {
+
+                foreach (var arrayValueNode in field.Nodes.Values)
+                {
+                    l.Add(valueParser.Parse(arrayValueNode, gt));
+                }
             }
             return l;
         }

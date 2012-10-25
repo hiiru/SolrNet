@@ -15,16 +15,14 @@ namespace SolrNet.Impl.ResponseParsers
             this.headerResponseParser = headerResponseParser;
         }
 
-        public ExtractResponse Parse(XDocument response) {
-            var responseHeader = headerResponseParser.Parse(response);
-
-            var contentNode = response.XPathSelectElement("response/str");
+        public ExtractResponse Parse(SolrResponseDocument document)
+        {
+            var responseHeader = headerResponseParser.Parse(document);
+            var contentNode = document.Nodes.First(x => x.Key.StartsWith("specialValue")).Value;
             var extractResponse = new ExtractResponse(responseHeader) {
-                Content = contentNode != null ? contentNode.Value : null
+                Content = contentNode != null ? contentNode.Value : null,
+                Metadata = ParseMetadata(document)
             };
-
-            extractResponse.Metadata = ParseMetadata(response);
-
             return extractResponse;
         }
     
@@ -42,44 +40,21 @@ namespace SolrNet.Impl.ResponseParsers
         ///         </arr>
         ///     </lst>
         /// </response>
-        private List<ExtractField> ParseMetadata(XDocument response)
+        private List<ExtractField> ParseMetadata(SolrResponseDocument document)
         {
+            var nullMetadata = document.Nodes["null_metadata"];
 
-            var metadataElements = response.XPathSelectElements("response/lst[@name='null_metadata']/arr");
+            var metadata = new List<ExtractField>();
 
-            if (metadataElements == null)
-            {
-                return new List<ExtractField>();
+            if (nullMetadata == null || nullMetadata.Nodes==null) {
+                return metadata;
             }
 
-            var metadata = new List<ExtractField>(metadataElements.Count());
-            foreach (var node in metadataElements)
+            foreach (var node in nullMetadata.Nodes)
             {
-                var nameAttrib = node.Attribute("name");
-                if (nameAttrib == null)
-                {
-                    throw new NotSupportedException("Metadata node has no name attribute: " + node);
-                }
-
-                // contents of the <arr> element might be a <str/> or a <null/>
-                string fieldValue;
-                var stringValue = node.Element("str");
-                if (stringValue != null)
-                {
-                    // is a <str/> node
-                    fieldValue = stringValue.Value;
-                }
-                else if (node.Element("null") != null)
-                {
-                    // is a <null/> node
-                    fieldValue = null;
-                }
-                else
-                {
-                    throw new NotSupportedException("No support for metadata element type: " + node);
-                }
-
-                metadata.Add(new ExtractField(nameAttrib.Value, fieldValue));
+                if (string.IsNullOrEmpty(node.Key)) throw new NotSupportedException("Metadata node has no name attribute: " + node);
+                if (node.Value.Collection == null || node.Value.Collection.Count == 0) throw new NotSupportedException("No support for metadata element type: " + node);
+                metadata.Add(new ExtractField(node.Key, node.Value.Collection.First()));
             }
 
             return metadata;
