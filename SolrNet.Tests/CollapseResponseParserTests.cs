@@ -19,6 +19,7 @@
 using System.Linq;
 using MbUnit.Framework;
 using SolrNet.Impl;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Impl.ResponseParsers;
 using SolrNet.Tests.Utils;
 
@@ -28,9 +29,11 @@ namespace SolrNet.Tests {
         [Test]
         public void Parse() {
             var parser = new CollapseResponseParser<TestDoc>();
-            var xml = EmbeddedResource.GetEmbeddedXml(GetType(), "Resources.collapseResponse.xml");
+            var formatParser = new XmlParserLINQ();
+            var xml = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.collapseResponse.xml");
+            var doc = formatParser.ParseFormat(xml);
             var results = new SolrQueryResults<TestDoc>();
-            parser.Parse(xml, results);
+            parser.Parse(doc, results);
             Assert.IsNotNull(results.Collapsing);
             Assert.AreEqual("manu_exact", results.Collapsing.Field);
             Assert.AreEqual(5, results.Collapsing.CollapsedDocuments.Count);
@@ -43,9 +46,11 @@ namespace SolrNet.Tests {
         [Test]
         public void Parse2() {
             var parser = new CollapseResponseParser<TestDoc>();
-            var xml = EmbeddedResource.GetEmbeddedXml(GetType(), "Resources.collapseResponse2.xml");
+            var formatParser = new XmlParserLINQ();
+            var xml = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.collapseResponse2.xml");
+            var doc = formatParser.ParseFormat(xml);
             var results = new SolrQueryResults<TestDoc>();
-            parser.Parse(xml, results);
+            parser.Parse(doc, results);
             Assert.IsNotNull(results.Collapsing);
             Assert.AreEqual("manu_exact", results.Collapsing.Field);
             Assert.AreEqual(3, results.Collapsing.CollapsedDocuments.Count);

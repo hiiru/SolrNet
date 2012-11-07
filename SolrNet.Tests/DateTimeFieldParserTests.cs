@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using MbUnit.Framework;
+using SolrNet.Impl;
 using SolrNet.Impl.FieldParsers;
 using SolrNet.Impl.FieldSerializers;
 using SolrNet.Utils;
@@ -61,9 +62,8 @@ namespace SolrNet.Tests {
             return dateTimes.Select(dt => {
                 Test t = new TestCase("NullableRoundTrips " + dt, () => {
                     var s = serializer.Serialize(dt).First().FieldValue;
-                    var xml = new XDocument();
-                    xml.Add(new XElement("date", s));
-                    var value = (DateTime?) parser.Parse(xml.Root, typeof (DateTime?));
+                    var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = s };
+                    var value = (DateTime?) parser.Parse(docNode, typeof (DateTime?));
                     Assert.AreEqual(dt, value);
                 });
                 return t;

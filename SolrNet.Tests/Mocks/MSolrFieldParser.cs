@@ -6,7 +6,7 @@ namespace SolrNet.Tests.Mocks {
     public class MSolrFieldParser : ISolrFieldParser {
         public Func<string, bool> canHandleSolrType;
         public Func<Type, bool> canHandleType;
-        public Func<XElement, Type, object> parse;
+        public Func<SolrResponseDocumentNode, Type, object> parse;
 
         public bool CanHandleSolrType(string solrType) {
             return canHandleSolrType(solrType);
@@ -16,7 +16,7 @@ namespace SolrNet.Tests.Mocks {
             return canHandleType(t);
         }
 
-        public object Parse(XElement field, Type t) {
+        public object Parse(SolrResponseDocumentNode field, Type t) {
             return parse(field, t);
         }
     }

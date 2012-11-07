@@ -17,7 +17,7 @@ namespace SolrNet.Impl.ResponseParsers {
         }
 
         public void Parse(SolrResponseDocument document, SolrMoreLikeThisHandlerResults<T> results) {
-            var resultNode = document.Nodes["result"].Nodes["match"];
+            var resultNode = document.Nodes["match"];
             results.Match = resultNode == null ? default(T) : 
             docParser.ParseResults(resultNode).FirstOrDefault();
         }

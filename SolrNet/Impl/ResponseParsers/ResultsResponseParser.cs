@@ -34,7 +34,7 @@ namespace SolrNet.Impl.ResponseParsers {
 
         public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
         {
-            var resultNode = document.Nodes["result"];
+            var resultNode = document.Nodes["response"];
                 
 			//FIX BY klaas 
 			//If resultNode == null exit func
@@ -44,10 +44,14 @@ namespace SolrNet.Impl.ResponseParsers {
 				return;
 			}
 
+            if (resultNode.Nodes.ContainsKey("numFound"))
             results.NumFound = Convert.ToInt32(resultNode.Nodes["numFound"].Value);
-            var maxScore = resultNode.Nodes["maxScore"];
-            if (maxScore != null) {
-                results.MaxScore = double.Parse(maxScore.Value, CultureInfo.InvariantCulture.NumberFormat);
+
+            if (resultNode.Nodes.ContainsKey("maxScore")) {
+                var maxScore = resultNode.Nodes["maxScore"];
+                if (maxScore != null) {
+                    results.MaxScore = double.Parse(maxScore.Value, CultureInfo.InvariantCulture.NumberFormat);
+                }
             }
 
             foreach (var result in docParser.ParseResults(resultNode))

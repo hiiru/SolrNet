@@ -5,10 +5,11 @@ using SolrNet.Impl;
 
 namespace SolrNet.Tests.Mocks {
     public class MSolrAbstractResponseParser<T> : ISolrAbstractResponseParser<T> {
-        public MFunc<XDocument, AbstractSolrQueryResults<T>, Unit> parse;
+        public MFunc<SolrResponseDocument, AbstractSolrQueryResults<T>, Unit> parse;
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
-            parse.Invoke(xml, results);
+        public void Parse(SolrResponseDocument doc, AbstractSolrQueryResults<T> results)
+        {
+            parse.Invoke(doc, results);
         }
     }
 }

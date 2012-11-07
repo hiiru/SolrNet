@@ -18,6 +18,7 @@ using System;
 using System.Xml;
 using System.Xml.Linq;
 using MbUnit.Framework;
+using SolrNet.Impl;
 using SolrNet.Impl.FieldParsers;
 
 namespace SolrNet.Tests {
@@ -52,10 +53,9 @@ namespace SolrNet.Tests {
 
         [Test]
         public void ParseNullableInt() {
-            var doc = new XDocument();
-            doc.Add(new XElement("int", "31"));
             var p = new DefaultFieldParser();
-            var i = p.Parse(doc.Root, typeof (int?));
+            var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = "31" };
+            var i = p.Parse(docNode, typeof(int?));
             Assert.IsInstanceOfType(typeof(int?), i);
             var ii = (int?) i;
             Assert.IsTrue(ii.HasValue);
@@ -64,10 +64,9 @@ namespace SolrNet.Tests {
 
         [Test]
         public void ParseLocation() {
-            var doc = new XDocument();
-            doc.Add(new XElement("str", "31.2,-44.2"));
+            var docNode = new SolrResponseDocumentNode("","str") { NodeType = SolrResponseDocumentNodeType.Value, Value = "31.2,-44.2" };
             var p = new DefaultFieldParser();
-            var l = p.Parse(doc.Root, typeof(Location));
+            var l = p.Parse(docNode, typeof(Location));
             Assert.IsInstanceOfType<Location>(l);
         }
     }

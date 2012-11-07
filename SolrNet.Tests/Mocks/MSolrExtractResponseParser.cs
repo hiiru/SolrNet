@@ -4,10 +4,10 @@ using SolrNet.Impl;
 
 namespace SolrNet.Tests.Mocks {
     public class MSolrExtractResponseParser : ISolrExtractResponseParser {
-        public Func<XDocument, ExtractResponse> parse;
+        public Func<SolrResponseDocument, ExtractResponse> parse;
 
-        public ExtractResponse Parse(XDocument response) {
-            return parse(response);
+        public ExtractResponse Parse(SolrResponseDocument doc) {
+            return parse(doc);
         }
     }
 }

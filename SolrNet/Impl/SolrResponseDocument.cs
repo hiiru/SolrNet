@@ -13,10 +13,10 @@ namespace SolrNet.Impl
             Nodes=new Dictionary<string, SolrResponseDocumentNode>();
         }
 
-        public string ResponseFormat { get; protected set; }
+        public string ResponseFormat { get;  set; }
 
-        public bool HasTypeInfomation { get; protected set; }
+        public bool HasTypeInfomation { get; set; }
 
-        public Dictionary<string, SolrResponseDocumentNode> Nodes { get; protected set; }
+        public Dictionary<string, SolrResponseDocumentNode> Nodes { get; set; }
     }
 }

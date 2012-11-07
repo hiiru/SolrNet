@@ -15,9 +15,11 @@
 #endregion
 
 using System.Collections;
+using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Linq;
 using MbUnit.Framework;
+using SolrNet.Impl;
 using SolrNet.Impl.FieldParsers;
 
 namespace SolrNet.Tests {
@@ -25,13 +27,9 @@ namespace SolrNet.Tests {
     public class InferringFieldParserTests {
         [Test]
         public void Collection() {
-            var doc = new XDocument();
-            var node = new XElement("arr");
-            node.Add(new XAttribute("name", "features"));
-            node.Add(new XElement("str", "hard drive"));
-            doc.Add(node);
+            var docNode = new SolrResponseDocumentNode("features") { NodeType = SolrResponseDocumentNodeType.Collection, Collection = {"hard drive"} };
             var parser = new InferringFieldParser(new DefaultFieldParser());
-            var value = parser.Parse(node, typeof (object));
+            var value = parser.Parse(docNode, typeof(object));
             Assert.IsInstanceOfType<ArrayList>(value);
         }
     }

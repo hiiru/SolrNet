@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using MbUnit.Framework;
 using Moroco;
+using SolrNet.Impl;
 using SolrNet.Impl.DocumentPropertyVisitors;
 using SolrNet.Tests.Mocks;
 
@@ -32,9 +33,10 @@ namespace SolrNet.Tests {
 
             var v = new RegularDocumentVisitor(parser, mapper);
             var doc = new Entity();
+            var docNode = new SolrResponseDocumentNode("");
             var field = new XElement("tag");
             try {
-                v.Visit(doc, "Id", field);
+                v.Visit(doc, "Id", docNode);
                 Assert.Fail("Should have failed with invalid cast");
             } catch (ArgumentException e) {
                 Assert.Contains(e.Message, "property 'Id'");

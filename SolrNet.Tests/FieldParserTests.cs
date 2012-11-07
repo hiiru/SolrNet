@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using MbUnit.Framework;
+using SolrNet.Impl;
 using SolrNet.Impl.FieldParsers;
 
 namespace SolrNet.Tests {
@@ -27,9 +28,8 @@ namespace SolrNet.Tests {
         [Test]
         public void FloatFieldParser_Parse() {
             var p = new FloatFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("int", "31"));
-            var v = p.Parse(xml.Root, null);
+            var docNode = new SolrResponseDocumentNode("", "int") {NodeType = SolrResponseDocumentNodeType.Value, Value = "31"};
+            var v = p.Parse(docNode, null);
             Assert.IsInstanceOfType(typeof(float), v);
             Assert.AreEqual(31f, v);
         }
@@ -37,9 +37,8 @@ namespace SolrNet.Tests {
         [Test]
         public void FloatFieldParser_cant_handle_string() {
             var p = new FloatFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("str", "pepe"));
-            Assert.Throws<FormatException>(() => p.Parse(xml.Root, null));
+            var docNode = new SolrResponseDocumentNode("", "str") {NodeType = SolrResponseDocumentNodeType.Value, Value = "pepe"};
+            Assert.Throws<FormatException>(() => p.Parse(docNode, null));
         }
 
         [Test]
@@ -75,17 +74,15 @@ namespace SolrNet.Tests {
         [Test]
         public void DoubleFieldParser() {
             var p = new DoubleFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("item", "123.99"));
-            p.Parse(xml.Root, typeof(float));
+            var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = "123.99" };
+            p.Parse(docNode, typeof(float));
         }
 
         [Test]
         public void DecimalFieldParser() {
             var p = new DecimalFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("item", "6.66E13"));
-            var value = (decimal) p.Parse(xml.Root, typeof(decimal));
+            var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = "6.66E13" };
+            var value = (decimal) p.Parse(docNode, typeof(decimal));
             Assert.AreEqual(66600000000000m, value);
         }
 
@@ -93,26 +90,23 @@ namespace SolrNet.Tests {
         [ExpectedException(typeof(OverflowException))]
         public void DecimalFieldParser_overflow() {
             var p = new DecimalFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("item", "6.66E53"));
-            var value = (decimal)p.Parse(xml.Root, typeof(decimal));
+            var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = "6.66E53" };
+            var value = (decimal)p.Parse(docNode, typeof(decimal));
         }
 
         [Test]
         public void DefaultFieldParser_EnumAsString() {
             var p = new DefaultFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("str", "One"));
-            var r = p.Parse(xml.Root, typeof(Numbers));
+            var docNode = new SolrResponseDocumentNode("") { NodeType = SolrResponseDocumentNodeType.Value, Value = "One" };
+            var r = p.Parse(docNode, typeof(Numbers));
             Assert.IsInstanceOfType(typeof(Numbers), r);
         }
 
         [Test]
         public void EnumAsString() {
             var p = new EnumFieldParser();
-            var xml = new XDocument();
-            xml.Add(new XElement("str", "One"));
-            var r = p.Parse(xml.Root, typeof(Numbers));
+            var docNode = new SolrResponseDocumentNode("", "str") { NodeType = SolrResponseDocumentNodeType.Value, Value = "One" };
+            var r = p.Parse(docNode, typeof(Numbers));
             Assert.IsInstanceOfType(typeof(Numbers), r);
         }
 
@@ -124,9 +118,8 @@ namespace SolrNet.Tests {
         public void SupportGuid() {
             var p = new DefaultFieldParser();
             var g = Guid.NewGuid();
-            var xml = new XDocument();
-            xml.Add(new XElement("str", g.ToString()));
-            var r = p.Parse(xml.Root, typeof(Guid));
+            var docNode = new SolrResponseDocumentNode("","str") { NodeType = SolrResponseDocumentNodeType.Value, Value = g.ToString() };
+            var r = p.Parse(docNode, typeof(Guid));
             var pg = (Guid)r;
             Assert.AreEqual(g, pg);
         }
@@ -135,9 +128,8 @@ namespace SolrNet.Tests {
         public void SupportsNullableGuid() {
             var p = new DefaultFieldParser();
             var g = Guid.NewGuid();
-            var xml = new XDocument();
-            xml.Add(new XElement("str", g.ToString()));
-            var r = p.Parse(xml.Root, typeof(Guid?));
+            var docNode = new SolrResponseDocumentNode("", "str") { NodeType = SolrResponseDocumentNodeType.Value, Value = g.ToString() };
+            var r = p.Parse(docNode, typeof(Guid?));
             var pg = (Guid?)r;
             Assert.AreEqual(g, pg.Value);
         }
