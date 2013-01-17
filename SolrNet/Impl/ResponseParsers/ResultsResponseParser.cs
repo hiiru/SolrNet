@@ -38,9 +38,11 @@ namespace SolrNet.Impl.ResponseParsers
 
 		public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
 		{
-			if (!document.Nodes.ContainsKey("response")) return;
-			var resultNode = document.Nodes["response"];
-			if (resultNode == null || resultNode.NodeType != SolrResponseDocumentNodeType.Documents) return;
+			var resultNode = document.Nodes.Values.FirstOrDefault(x => x.SolrType == "result");//&&x.Value.Name=="response")
+
+			//if (!document.Nodes.ContainsKey("result")) return;
+			//var resultNode = document.Nodes["result"];
+			if (resultNode == null || resultNode.NodeType != SolrResponseDocumentNodeType.Collection) return;
 
 			if (resultNode.Nodes != null)
 			{

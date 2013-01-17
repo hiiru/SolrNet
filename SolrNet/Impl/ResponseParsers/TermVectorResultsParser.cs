@@ -132,14 +132,16 @@ namespace SolrNet.Impl.ResponseParsers
 					 select int.Parse(p.Value.Value);
 		}
 
-		private IEnumerable<Offset> ParseOffsets(SolrResponseDocumentNode valueNode)
-		{
-			foreach (var node in valueNode.Nodes.Values)
-			{
-				var start = node.Nodes["start"];
-				var end = node.Nodes["end"];
-				yield return new Offset(int.Parse(start.Value), int.Parse(end.Value));
-			}
+        private IEnumerable<Offset> ParseOffsets(SolrResponseDocumentNode valueNode)
+        {
+            if (valueNode != null && valueNode.Nodes != null && (valueNode.Nodes.ContainsKey("start") && valueNode.Nodes.ContainsKey("end")))
+            {
+                var start = valueNode.Nodes["start"];
+                var end = valueNode.Nodes["end"];
+		        yield return new Offset(int.Parse(start.Value), int.Parse(end.Value));
+		    }
+            else
+		        yield return null;
 		}
 	}
 }

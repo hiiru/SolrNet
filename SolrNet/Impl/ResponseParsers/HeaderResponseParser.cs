@@ -46,13 +46,16 @@ namespace SolrNet.Impl.ResponseParsers
 		public ResponseHeader ParseHeader(SolrResponseDocumentNode node)
 		{
 			var r = new ResponseHeader();
-			r.Status = int.Parse(node.Nodes["status"].Value, CultureInfo.InvariantCulture.NumberFormat);
-			r.QTime = int.Parse(node.Nodes["QTime"].Value, CultureInfo.InvariantCulture.NumberFormat);
+			if (node.Nodes.ContainsKey("status"))
+				r.Status = int.Parse(node.Nodes["status"].Value, CultureInfo.InvariantCulture.NumberFormat);
+			if (node.Nodes.ContainsKey("QTime"))
+				r.QTime = int.Parse(node.Nodes["QTime"].Value, CultureInfo.InvariantCulture.NumberFormat);
 			r.Params = new Dictionary<string, string>();
-			foreach (var n in node.Nodes["params"].Nodes)
-			{
-				r.Params[n.Key] = n.Value.Value;
-			}
+			if (node.Nodes.ContainsKey("params"))
+				foreach (var n in node.Nodes["params"].Nodes)
+				{
+					r.Params[n.Key] = n.Value.Value;
+				}
 			return r;
 		}
 

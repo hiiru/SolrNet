@@ -5,12 +5,11 @@ using System.Text;
 
 namespace SolrNet.Impl
 {
-    public enum SolrResponseDocumentNodeType
-    {
-        Undefined,
-        Node,
-        Value,
-        Collection,
-        Documents
-    }
+	public enum SolrResponseDocumentNodeType
+	{
+		Undefined,
+		Node,
+		Value,
+		Collection
+	}
 }

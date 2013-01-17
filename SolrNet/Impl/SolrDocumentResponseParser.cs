@@ -47,9 +47,9 @@ namespace SolrNet.Impl
 		public IList<T> ParseResults(SolrResponseDocumentNode parentNode)
 		{
 			var results = new List<T>();
-			if (parentNode == null || parentNode.NodeType != SolrResponseDocumentNodeType.Documents)
+			if (parentNode == null || parentNode.NodeType != SolrResponseDocumentNodeType.Collection)
 				return results;
-			var nodes = parentNode.Documents;
+			var nodes = parentNode.Collection;
 			foreach (var docNode in nodes)
 			{
 				results.Add(ParseDocument(docNode));

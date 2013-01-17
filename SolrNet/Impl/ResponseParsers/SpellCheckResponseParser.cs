@@ -69,7 +69,7 @@ namespace SolrNet.Impl.ResponseParsers
 				var suggestionNodes = c.Value.Nodes["suggestion"].Collection;
 				foreach (var suggestionNode in suggestionNodes)
 				{
-					suggestions.Add(suggestionNode);
+					suggestions.Add(suggestionNode.Value);
 				}
 				result.Suggestions = suggestions;
 				r.Add(result);
