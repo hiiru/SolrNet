@@ -37,9 +37,9 @@ namespace SolrNet.Impl.FieldParsers
 			this.valueParser = valueParser;
 		}
 
-		public bool CanHandleSolrType(string solrType)
+		public bool CanHandleSolrType(SolrResponseDocumentNodeType solrType)
 		{
-			return solrType == null || solrType == "arr";
+			return solrType == SolrResponseDocumentNodeType.Array;
 		}
 
 		public bool CanHandleType(Type t)
@@ -84,7 +84,7 @@ namespace SolrNet.Impl.FieldParsers
 		public Array GetArrayProperty(SolrResponseDocumentNode field, Type t)
 		{
 			// int[], string[], etc
-			var arr = (Array)Activator.CreateInstance(t, new object[] { field.NodeType == SolrResponseDocumentNodeType.Collection ? field.Collection.Count : field.Nodes.Count });
+			var arr = (Array)Activator.CreateInstance(t, new object[] { field.Collection != null ? field.Collection.Count : 0 });
 			var arrType = Type.GetType(t.ToString().Replace("[]", ""));
 			int i = 0;
 			foreach (var arrayValueNode in field.Collection)
@@ -100,9 +100,8 @@ namespace SolrNet.Impl.FieldParsers
 			// ICollection<int>, etc
 			var gt = genericTypes[0];
 			var l = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(gt));
-			var collection = field.NodeType == SolrResponseDocumentNodeType.Node ? field.Nodes.Values.ToList() : field.Collection;
-			if (collection != null)
-				foreach (var arrayValueNode in collection)
+			if (field.SolrType == SolrResponseDocumentNodeType.Array && field.Collection != null)
+				foreach (var arrayValueNode in field.Collection)
 				{
 					l.Add(valueParser.Parse(arrayValueNode, gt));
 				}

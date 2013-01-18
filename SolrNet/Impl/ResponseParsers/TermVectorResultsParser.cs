@@ -53,9 +53,9 @@ namespace SolrNet.Impl.ResponseParsers
 		/// <returns></returns>
 		public IEnumerable<TermVectorDocumentResult> ParseDocuments(SolrResponseDocumentNode rootNode)
 		{
-			foreach (var docNode in rootNode.Nodes)
+			foreach (var docNode in rootNode.Collection)
 			{
-				switch (docNode.Key)
+				switch (docNode.Name)
 				{
 					case "warnings":
 
@@ -66,8 +66,9 @@ namespace SolrNet.Impl.ResponseParsers
 
 						//TODO: support for unique key field name
 						break;
+
 					default:
-						yield return ParseDoc(docNode.Value);
+						yield return ParseDoc(docNode);
 						break;
 				}
 			}
@@ -75,14 +76,14 @@ namespace SolrNet.Impl.ResponseParsers
 
 		private TermVectorDocumentResult ParseDoc(SolrResponseDocumentNode docNode)
 		{
-			var fieldNodes = docNode.Nodes;
+			var fieldNodes = docNode.Collection;
 			var uniqueKey = fieldNodes
-				 .Where(x => x.Key == "uniqueKey")
-				 .Select(x => x.Value.Value)
+				 .Where(x => x.Name == "uniqueKey")
+				 .Select(x => x.Value)
 				 .FirstOrDefault();
 			var termVectorResults = fieldNodes
-					.Where(x => x.Key == "includes")
-				 .SelectMany(x => ParseField(x.Value))
+					.Where(x => x.Name == "includes")
+				 .SelectMany(x => ParseField(x))
 					.ToList();
 
 			return new TermVectorDocumentResult(uniqueKey, termVectorResults);
@@ -90,14 +91,14 @@ namespace SolrNet.Impl.ResponseParsers
 
 		private IEnumerable<TermVectorResult> ParseField(SolrResponseDocumentNode fieldNode)
 		{
-			return fieldNode.Nodes
-				 .Select(termNode => ParseTerm(termNode.Value, fieldNode.Name));
+			return fieldNode.Collection
+				 .Select(termNode => ParseTerm(termNode, fieldNode.Name));
 		}
 
 		private TermVectorResult ParseTerm(SolrResponseDocumentNode termNode, string fieldName)
 		{
-			var nameValues = termNode.Nodes
-					.Select(e => new { name = e.Key, value = e.Value.Value })
+			var nameValues = termNode.Collection
+					.Select(e => new { name = e.Name, value = e.Value })
 					.ToList();
 
 			var tf = nameValues
@@ -115,8 +116,8 @@ namespace SolrNet.Impl.ResponseParsers
 			  .Select(x => (double?)double.Parse(x.value, CultureInfo.InvariantCulture.NumberFormat))
 			  .FirstOrDefault();
 
-			var offsets = termNode.Nodes.Values.SelectMany(ParseOffsets).ToList();
-			var positions = termNode.Nodes.Values.SelectMany(ParsePositions).ToList();
+			var offsets = termNode.Collection.Where(x => x.Name == "offsets").SelectMany(ParseOffsets).ToList();
+			var positions = termNode.Collection.SelectMany(ParsePositions).ToList();
 
 			return new TermVectorResult(fieldName,
 				 term: termNode.Name,
@@ -128,20 +129,32 @@ namespace SolrNet.Impl.ResponseParsers
 		{
 			return from e in new[] { valueNode }
 					 where e.Name == "positions"
-					 from p in e.Nodes
-					 select int.Parse(p.Value.Value);
+					 from p in e.Collection
+					 select int.Parse(p.Value);
 		}
 
-        private IEnumerable<Offset> ParseOffsets(SolrResponseDocumentNode valueNode)
-        {
-            if (valueNode != null && valueNode.Nodes != null && (valueNode.Nodes.ContainsKey("start") && valueNode.Nodes.ContainsKey("end")))
-            {
-                var start = valueNode.Nodes["start"];
-                var end = valueNode.Nodes["end"];
-		        yield return new Offset(int.Parse(start.Value), int.Parse(end.Value));
-		    }
-            else
-		        yield return null;
+		private IEnumerable<Offset> ParseOffsets(SolrResponseDocumentNode valueNode)
+		{
+			return from e in valueNode.Collection
+					 where e.Name == "start"
+					 from p in valueNode.Collection
+					 where p.Name == "end"
+					 select new Offset(start: int.Parse(e.Value), end: int.Parse(p.Value));
+
+			//return offsets.ToList();
+			//if (valueNode != null && valueNode.Collection != null) //&& (valueNode.Nodes.ContainsKey("start") && valueNode.Nodes.ContainsKey("end")))
+			//{
+			//   var start = valueNode.Collection.FirstOrDefault(x => x.Name == "start");
+			//   var end = valueNode.Collection.FirstOrDefault(x => x.Name == "end");
+			//   if (start != null && end != null)
+			//      yield return new Offset(int.Parse(start.Value), int.Parse(end.Value));
+
+			//   //TODO: is this else needed?
+			//   else
+			//      yield return null;
+			//}
+			//else
+			//   yield return null;
 		}
 	}
 }

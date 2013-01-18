@@ -45,7 +45,7 @@ namespace SolrNet.Impl.ResponseParsers
 				results.Collapsing = new CollapseResults
 				{
 					CollapsedDocuments = ParseCollapsedResults(mainCollapseNode).ToArray(),
-					Field = mainCollapseNode.Nodes["field"].Value
+					Field = mainCollapseNode.Collection.First(x => x.Name == "field").Value
 				};
 			}
 		}
@@ -57,12 +57,12 @@ namespace SolrNet.Impl.ResponseParsers
 		/// <returns></returns>
 		public static IEnumerable<CollapsedDocument> ParseCollapsedResults(SolrResponseDocumentNode node)
 		{
-			return node.Nodes["results"].Nodes.Values
+			return node.Collection.First(x => x.Name == "results").Collection
 				 .Select(docNode => new CollapsedDocument
 				 {
 					 Id = docNode.Name,
-					 FieldValue = docNode.Nodes["fieldValue"].Value,
-					 CollapseCount = Convert.ToInt32(docNode.Nodes["collapseCount"].Value)
+					 FieldValue = docNode.Collection.First(x => x.Name == "fieldValue").Value,
+					 CollapseCount = Convert.ToInt32(docNode.Collection.First(x => x.Name == "collapseCount").Value)
 				 });
 		}
 	}

@@ -24,9 +24,10 @@ namespace SolrNet.Impl.FieldParsers
 {
 	public class EnumFieldParser : ISolrFieldParser
 	{
-		public bool CanHandleSolrType(string solrType)
+		public bool CanHandleSolrType(SolrResponseDocumentNodeType solrType)
 		{
-			return solrType == null || solrType == "str" || solrType == "int";
+			return solrType == SolrResponseDocumentNodeType.String;
+			//return solrType == null || solrType == "str" || solrType == "int";
 		}
 
 		public bool CanHandleType(Type t)
@@ -36,7 +37,7 @@ namespace SolrNet.Impl.FieldParsers
 
 		public object Parse(SolrResponseDocumentNode field, Type t)
 		{
-			if (field == null || field.NodeType != SolrResponseDocumentNodeType.Value)
+			if (field == null)
 				throw new ArgumentNullException("field");
 			if (t == null)
 				throw new ArgumentNullException("t");

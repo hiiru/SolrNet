@@ -37,8 +37,9 @@ namespace SolrNet.Impl
 
 		public IList<Dictionary<string, object>> ParseResults(SolrResponseDocumentNode parentNode)
 		{
+			throw new NotImplementedException("NEEDS DEBUGGING");
 			var results = new List<Dictionary<string, object>>();
-			if (parentNode == null || parentNode.NodeType != SolrResponseDocumentNodeType.Collection)
+			if (parentNode == null || parentNode.SolrType != SolrResponseDocumentNodeType.Results)
 				return results;
 			var nodes = parentNode.Collection;
 			foreach (var docNode in nodes)
@@ -51,9 +52,9 @@ namespace SolrNet.Impl
 		public Dictionary<string, object> ParseDocument(SolrResponseDocumentNode node)
 		{
 			var doc = new Dictionary<string, object>();
-			foreach (var field in node.Nodes)
+			foreach (var field in node.Collection)
 			{
-				doc[field.Key] = fieldParser.Parse(field.Value, typeof(object));
+				doc[field.Name] = fieldParser.Parse(field, typeof(object));
 			}
 			return doc;
 		}

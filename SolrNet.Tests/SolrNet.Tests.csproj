@@ -219,7 +219,9 @@
     <EmbeddedResource Include="Resources\solrSchemaMultiValuedName.xml" />
     <EmbeddedResource Include="Resources\responseWithHighlighting.xml" />
     <EmbeddedResource Include="Resources\responseWithHighlighting2.xml" />
-    <EmbeddedResource Include="Resources\response.xml" />
+    <EmbeddedResource Include="Resources\response.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\responseWithArrays.xml" />
     <EmbeddedResource Include="Resources\responseWithArraysSimple.xml" />
     <EmbeddedResource Include="Resources\responseWithDate.xml" />
@@ -233,7 +235,9 @@
     <EmbeddedResource Include="Resources\responseWithMoreLikeThis.xml" />
     <EmbeddedResource Include="Resources\responseWithStats.xml" />
     <EmbeddedResource Include="Resources\partialResponseWithDateFacet.xml" />
-    <EmbeddedResource Include="Resources\partialResponseWithDateFacetAndOther.xml" />
+    <EmbeddedResource Include="Resources\partialResponseWithDateFacetAndOther.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\responseWithGroupingOnInstock.xml" />
     <EmbeddedResource Include="Resources\responseWithFacetPivoting.xml" />
   </ItemGroup>

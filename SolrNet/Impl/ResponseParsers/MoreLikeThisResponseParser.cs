@@ -17,6 +17,7 @@
 #endregion license
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -60,10 +61,13 @@ namespace SolrNet.Impl.ResponseParsers
 		public IDictionary<string, IList<T>> ParseMoreLikeThis(IEnumerable<T> results, SolrResponseDocumentNode node)
 		{
 			var r = new Dictionary<string, IList<T>>();
-			var docRefs = node.Nodes["result"].Nodes;
+			if (node.Collection == null)
+				return r;
+
+			var docRefs = node.Collection.Where(x => x.SolrType == SolrResponseDocumentNodeType.Results);
 			foreach (var docRef in docRefs)
 			{
-				r[docRef.Key] = docParser.ParseResults(docRef.Value);
+				r[docRef.Name] = docParser.ParseResults(docRef);
 			}
 			return r;
 		}

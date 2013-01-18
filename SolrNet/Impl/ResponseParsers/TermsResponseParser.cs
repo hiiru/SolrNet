@@ -52,16 +52,17 @@ namespace SolrNet.Impl.ResponseParsers
 		public TermsResults ParseTerms(SolrResponseDocumentNode node)
 		{
 			var r = new TermsResults();
-			var terms = node.Nodes;
-			foreach (var c in terms)
+			if (node.Collection == null)
+				return r;
+			foreach (var c in node.Collection)
 			{
 				var result = new TermsResult();
-				result.Field = c.Key;
+				result.Field = c.Name;
 				var termList = new List<KeyValuePair<string, int>>();
-				var termNodes = c.Value.Nodes;
+				var termNodes = c.Collection;
 				foreach (var termNode in termNodes)
 				{
-					termList.Add(new KeyValuePair<string, int>(termNode.Key, int.Parse(termNode.Value.Value)));
+					termList.Add(new KeyValuePair<string, int>(termNode.Name, int.Parse(termNode.Value)));
 				}
 				result.Terms = termList;
 				r.Add(result);

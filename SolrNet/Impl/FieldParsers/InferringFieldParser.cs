@@ -36,11 +36,20 @@ namespace SolrNet.Impl.FieldParsers
 			this.parser = parser;
 		}
 
-		public bool CanHandleSolrType(string solrType)
+		public bool CanHandleSolrType(SolrResponseDocumentNodeType solrType)
 		{
-			if (solrType == null)
-				return false;
-			return true;
+			switch (solrType)
+			{
+				case SolrResponseDocumentNodeType.Boolean:
+				case SolrResponseDocumentNodeType.String:
+				case SolrResponseDocumentNodeType.Int:
+				case SolrResponseDocumentNodeType.Float:
+				case SolrResponseDocumentNodeType.Date:
+				case SolrResponseDocumentNodeType.Array:
+					return true;
+				default:
+					return false;
+			}
 		}
 
 		public bool CanHandleType(Type t)
@@ -48,27 +57,25 @@ namespace SolrNet.Impl.FieldParsers
 			return true;
 		}
 
-		private static readonly IDictionary<string, Type> solrTypes;
+		private static readonly IDictionary<SolrResponseDocumentNodeType, Type> solrTypes;
 
 		static InferringFieldParser()
 		{
-			solrTypes = new Dictionary<string, Type> {
-                {"bool", typeof (bool)},
-                {"str", typeof (string)},
-                {"int", typeof (int)},
-                {"float", typeof (float)},
-                {"double", typeof(double)},
-                {"long", typeof (long)},
-                {"arr", typeof (ICollection)},
-                {"date", typeof (DateTime)},
-            };
+			solrTypes = new Dictionary<SolrResponseDocumentNodeType, Type> {
+				{SolrResponseDocumentNodeType.Boolean, typeof (bool)},
+				{SolrResponseDocumentNodeType.String, typeof (string)},
+				{SolrResponseDocumentNodeType.Int, typeof (int)},
+				{SolrResponseDocumentNodeType.Float, typeof (float)},
+				{SolrResponseDocumentNodeType.Array, typeof (ICollection)},
+				{SolrResponseDocumentNodeType.Date, typeof (DateTime)},
+			};
 		}
 
 		public object Parse(SolrResponseDocumentNode field, Type t)
 		{
 			Type type = null;
 			if (solrTypes.ContainsKey(field.SolrType)) type = solrTypes[field.SolrType];
-			return parser.Parse(field, type);
+			return parser.Parse(field, type ?? t);
 		}
 	}
 }

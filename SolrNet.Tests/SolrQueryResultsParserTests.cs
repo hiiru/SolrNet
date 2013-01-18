@@ -23,6 +23,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Castle.Components.DictionaryAdapter;
 using Castle.Core;
 using Castle.Facilities.SolrNetIntegration;
 using MbUnit.Framework;
@@ -60,7 +61,7 @@ namespace SolrNet.Tests
 			var doc = formatParser.ParseFormat(xml);
 			SolrResponseDocumentNode docNode = null;
 			if (doc.Nodes.ContainsKey("response") && doc.Nodes["response"].Collection != null)
-				docNode = doc.Nodes["response"].Collection.FirstOrDefault();
+				docNode = doc.Nodes["response"].Collection.FirstOrDefault(x => x.SolrType == SolrResponseDocumentNodeType.Document);
 			Assert.IsNotNull(docNode);
 			var parsedDoc = parser.ParseDocument(docNode);
 			Assert.IsNotNull(parsedDoc);
@@ -78,7 +79,7 @@ namespace SolrNet.Tests
 			var doc = formatParser.ParseFormat(xml);
 			SolrResponseDocumentNode docNode = null;
 			if (doc.Nodes.ContainsKey("response") && doc.Nodes["response"].Collection != null)
-				docNode = doc.Nodes["response"].Collection.FirstOrDefault();
+				docNode = doc.Nodes["response"].Collection.FirstOrDefault(x => x.SolrType == SolrResponseDocumentNodeType.Document);
 			Assert.IsNotNull(docNode);
 			var parsedDoc = parser.ParseDocument(docNode);
 			Assert.IsNotNull(parsedDoc);
@@ -117,11 +118,10 @@ namespace SolrNet.Tests
 		{
 			SolrResponseDocumentNode docNode = null;
 			if (doc.Nodes.ContainsKey("result") && doc.Nodes["result"].Collection != null)
-				docNode = doc.Nodes["result"].Collection.FirstOrDefault();
+				docNode = doc.Nodes["result"].Collection.FirstOrDefault(x => x.SolrType == SolrResponseDocumentNodeType.Document);
 			Assert.IsNotNull(docNode);
-			SolrResponseDocumentNode fieldNode = null;
-			if (docNode.Nodes != null && docNode.Nodes.ContainsKey(node))
-				fieldNode = docNode.Nodes[node];
+			Assert.IsNotNull(docNode.Collection);
+			SolrResponseDocumentNode fieldNode = docNode.Collection.FirstOrDefault(x => x.Name == node);
 			Assert.IsNotNull(fieldNode);
 			return fieldNode;
 		}
@@ -373,6 +373,8 @@ namespace SolrNet.Tests
 		[Test]
 		public void GenericDictionary_rest_of_fields()
 		{
+			//This Test fails because of SolrType String -> Object for a DateTime (DateTimeFieldParser can't handle Object)
+			// TODO: find a solution which works...
 			var results = ParseFromResource<TestDocWithGenDict5>("Resources.responseWithDictFloat.xml");
 			Assert.AreEqual("1.45", results[0].DictOne);
 			Assert.IsNotNull(results[0].Dict);
@@ -741,18 +743,17 @@ namespace SolrNet.Tests
 			var formatParser = new XmlParserLINQ();
 			var xml = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.partialResponseWithDateFacet.xml");
 			var doc = formatParser.ParseFormat(xml);
-			throw new NotImplementedException();
-
-			//var results = p.ParseFacetDates(xml.Root);
-			//Assert.AreEqual(1, results.Count);
-			//var result = results.First();
-			//Assert.AreEqual("timestamp", result.Key);
-			//Assert.AreEqual("+1DAY", result.Value.Gap);
-			//Assert.AreEqual(new DateTime(2009, 8, 10, 0, 33, 46, 578), result.Value.End);
-			//var dateResults = result.Value.DateResults;
-			//Assert.AreEqual(1, dateResults.Count);
-			//Assert.AreEqual(16, dateResults[0].Value);
-			//Assert.AreEqual(new DateTime(2009, 8, 9, 0, 33, 46, 578), dateResults[0].Key);
+			var facetDatesNode = doc.Nodes.First().Value;
+			var results = p.ParseFacetDates(new SolrResponseDocumentNode("root", SolrResponseDocumentNodeType.Array) { Collection = new List<SolrResponseDocumentNode> { facetDatesNode } });
+			Assert.AreEqual(1, results.Count);
+			var result = results.First();
+			Assert.AreEqual("timestamp", result.Key);
+			Assert.AreEqual("+1DAY", result.Value.Gap);
+			Assert.AreEqual(new DateTime(2009, 8, 10, 0, 33, 46, 578), result.Value.End);
+			var dateResults = result.Value.DateResults;
+			Assert.AreEqual(1, dateResults.Count);
+			Assert.AreEqual(16, dateResults[0].Value);
+			Assert.AreEqual(new DateTime(2009, 8, 9, 0, 33, 46, 578), dateResults[0].Key);
 		}
 
 		[Test]
@@ -762,19 +763,18 @@ namespace SolrNet.Tests
 			var formatParser = new XmlParserLINQ();
 			var xml = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.partialResponseWithDateFacetAndOther.xml");
 			var doc = formatParser.ParseFormat(xml);
-			throw new NotImplementedException();
-
-			//var results = p.ParseFacetDates(xml.Root);
-			//Assert.AreEqual(1, results.Count);
-			//var result = results.First();
-			//Assert.AreEqual("timestamp", result.Key);
-			//Assert.AreEqual("+1DAY", result.Value.Gap);
-			//Assert.AreEqual(new DateTime(2009, 8, 10, 0, 46, 29), result.Value.End);
-			//Assert.AreEqual(new DateTime(2009, 8, 9, 22, 46, 29), result.Value.DateResults[0].Key);
-			//var other = result.Value.OtherResults;
-			//Assert.AreEqual(1, other[FacetDateOther.Before]);
-			//Assert.AreEqual(0, other[FacetDateOther.After]);
-			//Assert.AreEqual(0, other[FacetDateOther.Between]);
+			var facetDatesNode = doc.Nodes.First().Value;
+			var results = p.ParseFacetDates(new SolrResponseDocumentNode("root", SolrResponseDocumentNodeType.Array) { Collection = new List<SolrResponseDocumentNode> { facetDatesNode } });
+			Assert.AreEqual(1, results.Count);
+			var result = results.First();
+			Assert.AreEqual("timestamp", result.Key);
+			Assert.AreEqual("+1DAY", result.Value.Gap);
+			Assert.AreEqual(new DateTime(2009, 8, 10, 0, 46, 29), result.Value.End);
+			Assert.AreEqual(new DateTime(2009, 8, 9, 22, 46, 29), result.Value.DateResults[0].Key);
+			var other = result.Value.OtherResults;
+			Assert.AreEqual(1, other[FacetDateOther.Before]);
+			Assert.AreEqual(0, other[FacetDateOther.After]);
+			Assert.AreEqual(0, other[FacetDateOther.Between]);
 		}
 
 		[Test]
@@ -818,8 +818,8 @@ namespace SolrNet.Tests
 			var xml = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.response.xml");
 			var doc = formatParser.ParseFormat(xml);
 			SolrResponseDocumentNode docNode = null;
-			if (doc.Nodes.ContainsKey("result") && doc.Nodes["result"].Collection != null)
-				docNode = doc.Nodes["result"].Collection.FirstOrDefault();
+			if (doc.Nodes.ContainsKey("response") && doc.Nodes["response"].Collection != null)
+				docNode = doc.Nodes["response"].Collection.FirstOrDefault();
 			Assert.IsNotNull(docNode);
 			var parsetDoc = parser.ParseDocument(docNode);
 			Assert.IsNotNull(parsetDoc);

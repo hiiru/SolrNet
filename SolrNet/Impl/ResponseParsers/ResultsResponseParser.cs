@@ -38,24 +38,20 @@ namespace SolrNet.Impl.ResponseParsers
 
 		public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
 		{
-			var resultNode = document.Nodes.Values.FirstOrDefault(x => x.SolrType == "result");//&&x.Value.Name=="response")
+			var resultNode = document.Nodes.Values.FirstOrDefault(x => x.SolrType == SolrResponseDocumentNodeType.Results);
 
 			//if (!document.Nodes.ContainsKey("result")) return;
 			//var resultNode = document.Nodes["result"];
-			if (resultNode == null || resultNode.NodeType != SolrResponseDocumentNodeType.Collection) return;
+			if (resultNode == null) return;
 
-			if (resultNode.Nodes != null)
+			if (resultNode.Collection != null)
 			{
-				if (resultNode.Nodes.ContainsKey("numFound"))
-					results.NumFound = Convert.ToInt32(resultNode.Nodes["numFound"].Value);
-				if (resultNode.Nodes.ContainsKey("maxScore"))
-				{
-					var maxScore = resultNode.Nodes["maxScore"];
-					if (maxScore != null)
-					{
-						results.MaxScore = double.Parse(maxScore.Value, CultureInfo.InvariantCulture.NumberFormat);
-					}
-				}
+				var numFound = resultNode.Collection.FirstOrDefault(x => x.Name == "numFound");
+				if (numFound != null)
+					results.NumFound = Convert.ToInt32(numFound.Value);
+				var maxScore = resultNode.Collection.FirstOrDefault(x => x.Name == "maxScore");
+				if (maxScore != null)
+					results.MaxScore = double.Parse(maxScore.Value, CultureInfo.InvariantCulture.NumberFormat);
 			}
 
 			foreach (var result in docParser.ParseResults(resultNode))

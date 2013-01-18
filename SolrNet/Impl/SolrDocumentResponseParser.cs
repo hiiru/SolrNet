@@ -17,6 +17,7 @@
 #endregion license
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -47,10 +48,9 @@ namespace SolrNet.Impl
 		public IList<T> ParseResults(SolrResponseDocumentNode parentNode)
 		{
 			var results = new List<T>();
-			if (parentNode == null || parentNode.NodeType != SolrResponseDocumentNodeType.Collection)
+			if (parentNode == null || parentNode.Collection == null || parentNode.SolrType != SolrResponseDocumentNodeType.Results)
 				return results;
-			var nodes = parentNode.Collection;
-			foreach (var docNode in nodes)
+			foreach (var docNode in parentNode.Collection.Where(x => x.SolrType == SolrResponseDocumentNodeType.Document))
 			{
 				results.Add(ParseDocument(docNode));
 			}
@@ -66,9 +66,11 @@ namespace SolrNet.Impl
 		public T ParseDocument(SolrResponseDocumentNode node)
 		{
 			var doc = activator.Create();
-			foreach (var field in node.Nodes)
+			if (node == null || node.Collection == null)
+				return doc;
+			foreach (var field in node.Collection)
 			{
-				propVisitor.Visit(doc, field.Key, field.Value);
+				propVisitor.Visit(doc, field.Name, field);
 			}
 			return doc;
 		}

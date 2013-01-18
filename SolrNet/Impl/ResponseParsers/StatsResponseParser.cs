@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using SolrNet.Utils;
@@ -54,10 +55,14 @@ namespace SolrNet.Impl.ResponseParsers
 		public Dictionary<string, StatsResult> ParseStats(SolrResponseDocumentNode node, string selector)
 		{
 			var d = new Dictionary<string, StatsResult>();
-			var mainNode = node.Nodes[selector];
-			foreach (var n in mainNode.Nodes)
+			if (node.Collection == null)
+				return d;
+			var mainNode = selector == null ? node : node.Collection.FirstOrDefault(x => x.Name == selector);
+			if (mainNode == null)
+				return d;
+			foreach (var n in mainNode.Collection)
 			{
-				d[n.Key] = ParseStatsNode(n.Value);
+				d[n.Name] = ParseStatsNode(n);
 			}
 
 			return d;
@@ -66,9 +71,11 @@ namespace SolrNet.Impl.ResponseParsers
 		public IDictionary<string, Dictionary<string, StatsResult>> ParseFacetNode(SolrResponseDocumentNode node)
 		{
 			var r = new Dictionary<string, Dictionary<string, StatsResult>>();
-			foreach (var n in node.Nodes)
+			if (node.Collection == null)
+				return r;
+			foreach (var n in node.Collection)
 			{
-				r[n.Key] = ParseStats(n.Value, n.Key);
+				r[n.Name] = ParseStats(n, null);
 			}
 			return r;
 		}
@@ -76,43 +83,46 @@ namespace SolrNet.Impl.ResponseParsers
 		public StatsResult ParseStatsNode(SolrResponseDocumentNode node)
 		{
 			var r = new StatsResult();
-			foreach (var statNode in node.Nodes)
+			if (node.Collection == null)
+				return r;
+			foreach (var statNode in node.Collection)
 			{
-				switch (statNode.Key)
+				switch (statNode.Name)
 				{
 					case "min":
-						r.Min = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Min = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "max":
-						r.Max = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Max = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "sum":
-						r.Sum = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Sum = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "sumOfSquares":
-						r.SumOfSquares = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.SumOfSquares = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "mean":
-						r.Mean = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Mean = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "stddev":
-						r.StdDev = Convert.ToDouble(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.StdDev = Convert.ToDouble(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "count":
-						r.Count = Convert.ToInt64(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Count = Convert.ToInt64(statNode.Value, CultureInfo.InvariantCulture);
 						break;
 
 					case "missing":
-						r.Missing = Convert.ToInt64(statNode.Value.Value, CultureInfo.InvariantCulture);
+						r.Missing = Convert.ToInt64(statNode.Value, CultureInfo.InvariantCulture);
 						break;
+
 					default:
-						r.FacetResults = ParseFacetNode(statNode.Value);
+						r.FacetResults = ParseFacetNode(statNode);
 						break;
 				}
 			}

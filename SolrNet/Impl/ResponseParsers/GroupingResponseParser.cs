@@ -39,9 +39,9 @@ namespace SolrNet.Impl.ResponseParsers
 				return;
 
 			var groupings =
-				 from groupNode in mainGroupingNode.Nodes
-				 let groupName = groupNode.Key
-				 let groupResults = ParseGroupedResults(groupNode.Value)
+				 from groupNode in mainGroupingNode.Collection
+				 let groupName = groupNode.Name
+				 let groupResults = ParseGroupedResults(groupNode)
 				 select new { groupName, groupResults };
 
 			results.Grouping = groupings.ToDictionary(x => x.groupName, x => x.groupResults);
@@ -54,12 +54,12 @@ namespace SolrNet.Impl.ResponseParsers
 		/// <returns></returns>
 		public GroupedResults<T> ParseGroupedResults(SolrResponseDocumentNode groupNode)
 		{
-			var ngroupNode = groupNode.Nodes["ngroups"];
+			var ngroupNode = groupNode.Collection.FirstOrDefault(x => x.Name == "ngroups");
 
 			return new GroupedResults<T>
 			{
 				Groups = ParseGroup(groupNode).ToList(),
-				Matches = Convert.ToInt32(groupNode.Nodes["matches"].Value),
+				Matches = Convert.ToInt32(groupNode.Collection.First(x => x.Name == "matches").Value),
 				Ngroups = ngroupNode == null ? null : (int?)int.Parse(ngroupNode.Value),
 			};
 		}
@@ -71,23 +71,26 @@ namespace SolrNet.Impl.ResponseParsers
 		/// <returns></returns>
 		public IEnumerable<Group<T>> ParseGroup(SolrResponseDocumentNode node)
 		{
+			var groupsNode = node.Collection.First(x => x.Name == "groups");
+			if (groupsNode == null || groupsNode.Collection == null)
+				return new List<Group<T>>();
 			return
-				 from docNode in node.Nodes["groups"].Nodes
-				 let groupValueNode = docNode.Value.Nodes["groupValue"].Nodes.FirstOrDefault()
-				 where groupValueNode.Value != null
-				 let groupValue = groupValueNode.Value.SolrType == "null"
-											 ? "UNMATCHED"
-											 : //These are the results that do not match the grouping
-										groupValueNode.Value.Value
-				 let resultNode = docNode.Value.Nodes["doclist"]
-				 let numFound = Convert.ToInt32(resultNode.Nodes["numFound"].Value)
-				 let docs = docParser.ParseResults(resultNode).ToList()
-				 select new Group<T>
-				 {
-					 GroupValue = groupValue,
-					 Documents = docs,
-					 NumFound = numFound,
-				 };
+				from docNode in groupsNode.Collection
+				where docNode != null
+				let groupValueNode = docNode.Collection.First(x => x.Name == "groupValue")
+				where groupValueNode != null
+				let groupValue = groupValueNode.SolrType != SolrResponseDocumentNodeType.Int ?
+					"UNMATCHED" : //These are the results that do not match the grouping
+					groupValueNode.Value
+				let resultNode = docNode.Collection.First(x => x.Name == "doclist")
+				let numFound = Convert.ToInt32(resultNode.Collection.First(x => x.Name == "numFound").Value)
+				let docs = docParser.ParseResults(resultNode).ToList()
+				select new Group<T>
+				{
+					GroupValue = groupValue,
+					Documents = docs,
+					NumFound = numFound,
+				};
 		}
 	}
 }

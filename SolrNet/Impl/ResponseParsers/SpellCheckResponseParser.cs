@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -53,27 +54,33 @@ namespace SolrNet.Impl.ResponseParsers
 		public SpellCheckResults ParseSpellChecking(SolrResponseDocumentNode node)
 		{
 			var r = new SpellCheckResults();
-			var suggestionsNode = node.Nodes["suggestions"];
-			var collationNode = suggestionsNode.Nodes["collation"];
+			var suggestionsNode = node.Collection.FirstOrDefault(x => x.Name == "suggestions");
+			if (suggestionsNode == null)
+				return r;
+			var collationNode = suggestionsNode.Collection.FirstOrDefault(x => x.Name == "collation");
 			if (collationNode != null)
 				r.Collation = collationNode.Value;
-			var spellChecks = suggestionsNode.Nodes;
-			foreach (var c in spellChecks)
-			{
-				var result = new SpellCheckResult();
-				result.Query = c.Key;
-				result.NumFound = Convert.ToInt32(c.Value.Nodes["numFound"].Value);
-				result.EndOffset = Convert.ToInt32(c.Value.Nodes["endOffset"].Value);
-				result.StartOffset = Convert.ToInt32(c.Value.Nodes["startOffset"].Value);
-				var suggestions = new List<string>();
-				var suggestionNodes = c.Value.Nodes["suggestion"].Collection;
-				foreach (var suggestionNode in suggestionNodes)
+			if (suggestionsNode.Collection != null)
+				foreach (var c in suggestionsNode.Collection.Where(x => x.Name != "collation"))
 				{
-					suggestions.Add(suggestionNode.Value);
+					var result = new SpellCheckResult();
+					result.Query = c.Name;
+					var numFound = c.Collection.FirstOrDefault(x => x.Name == "numFound");
+					result.NumFound = numFound != null ? Convert.ToInt32(numFound.Value) : 0;
+					var endOffset = c.Collection.FirstOrDefault(x => x.Name == "endOffset");
+					result.EndOffset = endOffset != null ? Convert.ToInt32(endOffset.Value) : 0;
+					var startOffset = c.Collection.FirstOrDefault(x => x.Name == "startOffset");
+					result.StartOffset = startOffset != null ? Convert.ToInt32(startOffset.Value) : 0;
+					var suggestions = new List<string>();
+					var suggestionNodes = c.Collection.FirstOrDefault(x => x.Name == "suggestion");
+					if (suggestionNodes != null && suggestionNodes.Collection != null)
+						foreach (var suggestionNode in suggestionNodes.Collection)
+						{
+							suggestions.Add(suggestionNode.Value);
+						}
+					result.Suggestions = suggestions;
+					r.Add(result);
 				}
-				result.Suggestions = suggestions;
-				r.Add(result);
-			}
 			return r;
 		}
 	}

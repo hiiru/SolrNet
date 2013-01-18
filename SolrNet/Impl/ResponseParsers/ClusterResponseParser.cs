@@ -37,7 +37,7 @@ namespace SolrNet.Impl.ResponseParsers
 		/// <returns></returns>
 		private static ICollection<string> GetDocumentList(SolrResponseDocumentNode node)
 		{
-			return node.Collection.Where(x => x.NodeType == SolrResponseDocumentNodeType.Value).Select(x => x.Value).ToList();
+			return node.Collection.Where(x => x.Value != null).Select(x => x.Value).ToList();
 		}
 
 		/// <summary>
@@ -51,27 +51,26 @@ namespace SolrNet.Impl.ResponseParsers
 			var c = new ClusterResults();
 			foreach (var node in n.Collection)
 			{
-				if (node.NodeType != SolrResponseDocumentNodeType.Node)
+				if (node.SolrType != SolrResponseDocumentNodeType.Array)
 					continue;
 				var cluster = new Cluster();
-				foreach (var x in node.Nodes)
+				foreach (var x in node.Collection)
 				{
-					switch (x.Key)
+					switch (x.Name)
 					{
 						case "labels":
-							if (x.Value.NodeType == SolrResponseDocumentNodeType.Collection && x.Value.Collection != null && x.Value.Collection.Count > 0)
+							if (x.SolrType == SolrResponseDocumentNodeType.Array && x.Collection != null && x.Collection.Count > 0)
 							{
-								cluster.Label = Convert.ToString(x.Value.Collection.First().Value, CultureInfo.InvariantCulture);
+								cluster.Label = Convert.ToString(x.Collection.First().Value, CultureInfo.InvariantCulture);
 							}
 							break;
 
 						case "score":
-							if (x.Value.NodeType == SolrResponseDocumentNodeType.Value)
-								cluster.Score = Convert.ToDouble(x.Value.Value, CultureInfo.InvariantCulture);
+							cluster.Score = Convert.ToDouble(x.Value, CultureInfo.InvariantCulture);
 							break;
 
 						case "docs":
-							cluster.Documents = GetDocumentList(x.Value);
+							cluster.Documents = GetDocumentList(x);
 							break;
 					}
 				}

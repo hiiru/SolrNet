@@ -28,9 +28,9 @@ namespace SolrNet.Impl.FieldParsers
 	/// </summary>
 	public class FloatFieldParser : ISolrFieldParser
 	{
-		public bool CanHandleSolrType(string solrType)
+		public bool CanHandleSolrType(SolrResponseDocumentNodeType solrType)
 		{
-			return solrType == "float" || solrType == "int"; //solrType == null ||
+			return solrType == SolrResponseDocumentNodeType.Int || solrType == SolrResponseDocumentNodeType.Float;
 		}
 
 		public bool CanHandleType(Type t)

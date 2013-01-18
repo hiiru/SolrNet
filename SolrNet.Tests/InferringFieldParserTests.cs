@@ -32,7 +32,7 @@ namespace SolrNet.Tests
 		[Test]
 		public void Collection()
 		{
-			var docNode = new SolrResponseDocumentNode("features", "arr") { NodeType = SolrResponseDocumentNodeType.Collection, Collection = new List<SolrResponseDocumentNode> { new SolrResponseDocumentNode("", "str") { Value = "hard drive" } } };
+			var docNode = new SolrResponseDocumentNode("features", SolrResponseDocumentNodeType.Array) { Collection = new List<SolrResponseDocumentNode> { new SolrResponseDocumentNode("", SolrResponseDocumentNodeType.String) { Value = "hard drive" } } };
 			var parser = new InferringFieldParser(new DefaultFieldParser());
 			var value = parser.Parse(docNode, typeof(object));
 			Assert.IsInstanceOfType<ArrayList>(value);

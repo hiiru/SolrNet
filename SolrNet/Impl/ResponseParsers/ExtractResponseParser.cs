@@ -20,7 +20,7 @@ namespace SolrNet.Impl.ResponseParsers
 		public ExtractResponse Parse(SolrResponseDocument document)
 		{
 			var responseHeader = headerResponseParser.Parse(document);
-			var contentNode = document.Nodes.First(x => x.Key.StartsWith("specialValue")).Value;
+			var contentNode = document.Nodes.FirstOrDefault(x => x.Value.Name.StartsWith("specialValue")).Value;
 			var extractResponse = new ExtractResponse(responseHeader)
 			{
 				Content = contentNode != null ? contentNode.Value : null,
@@ -51,16 +51,16 @@ namespace SolrNet.Impl.ResponseParsers
 
 			var nullMetadata = document.Nodes["null_metadata"];
 
-			if (nullMetadata == null || nullMetadata.Nodes == null)
+			if (nullMetadata == null || nullMetadata.Collection == null)
 			{
 				return metadata;
 			}
 
-			foreach (var node in nullMetadata.Nodes)
+			foreach (var node in nullMetadata.Collection)
 			{
-				if (string.IsNullOrEmpty(node.Key)) throw new NotSupportedException("Metadata node has no name attribute: " + node);
-				if (node.Value.Collection == null || node.Value.Collection.Count == 0) throw new NotSupportedException("No support for metadata element type: " + node);
-				metadata.Add(new ExtractField(node.Key, node.Value.Collection.First().Value));
+				if (string.IsNullOrEmpty(node.Name)) throw new NotSupportedException("Metadata node has no name attribute: " + node);
+				if (node.Collection == null || node.Collection.Count == 0) throw new NotSupportedException("No support for metadata element type: " + node);
+				metadata.Add(new ExtractField(node.Name, node.Collection.First().Value));
 			}
 
 			return metadata;

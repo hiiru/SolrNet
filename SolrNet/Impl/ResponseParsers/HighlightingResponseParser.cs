@@ -52,10 +52,11 @@ namespace SolrNet.Impl.ResponseParsers
 		public IDictionary<string, HighlightedSnippets> ParseHighlighting(IEnumerable<T> results, SolrResponseDocumentNode node)
 		{
 			var highlights = new Dictionary<string, HighlightedSnippets>();
-			var docRefs = node.Nodes;
-			foreach (var docRef in docRefs)
+			if (node.Collection == null)
+				return highlights;
+			foreach (var docRef in node.Collection)
 			{
-				highlights.Add(docRef.Key, ParseHighlightingFields(docRef.Value.Nodes.Values));
+				highlights.Add(docRef.Name, ParseHighlightingFields(docRef.Collection));
 			}
 			return highlights;
 		}
@@ -71,9 +72,9 @@ namespace SolrNet.Impl.ResponseParsers
 			foreach (var field in nodes)
 			{
 				var snippets = new List<string>();
-				foreach (var str in field.Nodes)
+				foreach (var str in field.Collection)
 				{
-					snippets.Add(str.Value.Value);
+					snippets.Add(str.Value);
 				}
 				fields.Add(field.Name, snippets);
 			}

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -46,15 +47,18 @@ namespace SolrNet.Impl.ResponseParsers
 		public ResponseHeader ParseHeader(SolrResponseDocumentNode node)
 		{
 			var r = new ResponseHeader();
-			if (node.Nodes.ContainsKey("status"))
-				r.Status = int.Parse(node.Nodes["status"].Value, CultureInfo.InvariantCulture.NumberFormat);
-			if (node.Nodes.ContainsKey("QTime"))
-				r.QTime = int.Parse(node.Nodes["QTime"].Value, CultureInfo.InvariantCulture.NumberFormat);
+			var status = node.Collection.FirstOrDefault(x => x.Name == "status");
+			if (status != null)
+				r.Status = int.Parse(status.Value, CultureInfo.InvariantCulture.NumberFormat);
+			var QTime = node.Collection.FirstOrDefault(x => x.Name == "QTime");
+			if (QTime != null)
+				r.QTime = int.Parse(QTime.Value, CultureInfo.InvariantCulture.NumberFormat);
 			r.Params = new Dictionary<string, string>();
-			if (node.Nodes.ContainsKey("params"))
-				foreach (var n in node.Nodes["params"].Nodes)
+			var paramsCollection = node.Collection.FirstOrDefault(x => x.Name == "params");
+			if (paramsCollection != null && paramsCollection.Collection != null)
+				foreach (var n in paramsCollection.Collection)
 				{
-					r.Params[n.Key] = n.Value.Value;
+					r.Params[n.Name] = n.Value;
 				}
 			return r;
 		}

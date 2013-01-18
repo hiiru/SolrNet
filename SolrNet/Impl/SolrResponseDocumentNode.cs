@@ -7,19 +7,15 @@ namespace SolrNet.Impl
 {
 	public class SolrResponseDocumentNode
 	{
-		public SolrResponseDocumentNode(string name, string type = null)
+		public SolrResponseDocumentNode(string name, SolrResponseDocumentNodeType type)
 		{
-			Name = name;
+			Name = name ?? "";
 			SolrType = type;
 		}
 
 		public string Name { get; protected set; }
 
-		public string SolrType { get; protected set; }
-
-		public SolrResponseDocumentNodeType NodeType { get; set; }
-
-		public Dictionary<string, SolrResponseDocumentNode> Nodes { get; set; }
+		public SolrResponseDocumentNodeType SolrType { get; protected set; }
 
 		public List<SolrResponseDocumentNode> Collection { get; set; }
 

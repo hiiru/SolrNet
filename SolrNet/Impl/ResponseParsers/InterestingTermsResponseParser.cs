@@ -22,7 +22,7 @@ namespace SolrNet.Impl.ResponseParsers
 			if (root == null)
 				return Enumerable.Empty<KeyValuePair<string, float>>();
 			return root.Collection.Select(x =>
-				x.SolrType == "float" || x.SolrType == "int" ?
+				x.SolrType == SolrResponseDocumentNodeType.Int || x.SolrType == SolrResponseDocumentNodeType.Float ?
 				new KeyValuePair<string, float>(x.Name, FloatFieldParser.Parse(x.Value)) :
 				new KeyValuePair<string, float>(x.Value.Trim(), 0.0f));
 		}
