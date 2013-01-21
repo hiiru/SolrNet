@@ -12,6 +12,6 @@ namespace SolrNet.Impl {
         /// </summary>
         /// <param name="xml">query response</param>
         /// <param name="results">results object</param>
-        void Parse(XDocument xml, AbstractSolrQueryResults<T> results);
+        void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results);
     }
 }

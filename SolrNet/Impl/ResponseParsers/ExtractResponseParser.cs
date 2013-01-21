@@ -8,81 +8,62 @@ using System.Xml.XPath;
 
 namespace SolrNet.Impl.ResponseParsers
 {
-    public class ExtractResponseParser: ISolrExtractResponseParser {
-        private readonly ISolrHeaderResponseParser headerResponseParser;
+	public class ExtractResponseParser : ISolrExtractResponseParser
+	{
+		private readonly ISolrHeaderResponseParser headerResponseParser;
 
-        public ExtractResponseParser(ISolrHeaderResponseParser headerResponseParser) {
-            this.headerResponseParser = headerResponseParser;
-        }
+		public ExtractResponseParser(ISolrHeaderResponseParser headerResponseParser)
+		{
+			this.headerResponseParser = headerResponseParser;
+		}
 
-        public ExtractResponse Parse(XDocument response) {
-            var responseHeader = headerResponseParser.Parse(response);
+		public ExtractResponse Parse(SolrResponseDocument document)
+		{
+			var responseHeader = headerResponseParser.Parse(document);
+			var contentNode = document.Nodes.FirstOrDefault(x => x.Value.Name.StartsWith("specialValue")).Value;
+			var extractResponse = new ExtractResponse(responseHeader)
+			{
+				Content = contentNode != null ? contentNode.Value : null,
+				Metadata = ParseMetadata(document)
+			};
+			return extractResponse;
+		}
 
-            var contentNode = response.XPathSelectElement("response/str");
-            var extractResponse = new ExtractResponse(responseHeader) {
-                Content = contentNode != null ? contentNode.Value : null
-            };
+		/// Metadata looks like this:
+		/// <response>
+		///     <lst name="null_metadata">
+		///         <arr name="stream_source_info">
+		///             <null />
+		///         </arr>
+		///         <arr name="nbTab">
+		///             <str>10</str>
+		///         </arr>
+		///         <arr name="date">
+		///             <str>2009-06-24T15:25:00</str>
+		///         </arr>
+		///     </lst>
+		/// </response>
+		private List<ExtractField> ParseMetadata(SolrResponseDocument document)
+		{
+			var metadata = new List<ExtractField>();
+			if (!document.Nodes.ContainsKey("null_metadata"))
+				return metadata;
 
-            extractResponse.Metadata = ParseMetadata(response);
+			var nullMetadata = document.Nodes["null_metadata"];
 
-            return extractResponse;
-        }
-    
-        /// Metadata looks like this:
-        /// <response>
-        ///     <lst name="null_metadata">
-        ///         <arr name="stream_source_info">
-        ///             <null />
-        ///         </arr>
-        ///         <arr name="nbTab">
-        ///             <str>10</str>
-        ///         </arr>
-        ///         <arr name="date">
-        ///             <str>2009-06-24T15:25:00</str>
-        ///         </arr>
-        ///     </lst>
-        /// </response>
-        private List<ExtractField> ParseMetadata(XDocument response)
-        {
+			if (nullMetadata == null || nullMetadata.Collection == null)
+			{
+				return metadata;
+			}
 
-            var metadataElements = response.XPathSelectElements("response/lst[@name='null_metadata']/arr");
+			foreach (var node in nullMetadata.Collection)
+			{
+				if (string.IsNullOrEmpty(node.Name)) throw new NotSupportedException("Metadata node has no name attribute: " + node);
+				if (node.Collection == null || node.Collection.Count == 0) throw new NotSupportedException("No support for metadata element type: " + node);
+				metadata.Add(new ExtractField(node.Name, node.Collection.First().Value));
+			}
 
-            if (metadataElements == null)
-            {
-                return new List<ExtractField>();
-            }
-
-            var metadata = new List<ExtractField>(metadataElements.Count());
-            foreach (var node in metadataElements)
-            {
-                var nameAttrib = node.Attribute("name");
-                if (nameAttrib == null)
-                {
-                    throw new NotSupportedException("Metadata node has no name attribute: " + node);
-                }
-
-                // contents of the <arr> element might be a <str/> or a <null/>
-                string fieldValue;
-                var stringValue = node.Element("str");
-                if (stringValue != null)
-                {
-                    // is a <str/> node
-                    fieldValue = stringValue.Value;
-                }
-                else if (node.Element("null") != null)
-                {
-                    // is a <null/> node
-                    fieldValue = null;
-                }
-                else
-                {
-                    throw new NotSupportedException("No support for metadata element type: " + node);
-                }
-
-                metadata.Add(new ExtractField(nameAttrib.Value, fieldValue));
-            }
-
-            return metadata;
-        }
-    }
+			return metadata;
+		}
+	}
 }

@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using SolrNet.Impl.FormatParser;
 
 namespace SolrNet.Impl {
     public class SolrMoreLikeThisHandlerQueryResultsParser<T> : ISolrMoreLikeThisHandlerQueryResultsParser<T> {
@@ -10,9 +11,10 @@ namespace SolrNet.Impl {
 
         public SolrMoreLikeThisHandlerResults<T> Parse(string r) {
             var results = new SolrMoreLikeThisHandlerResults<T>();
-            var xml = XDocument.Parse(r);
+            var parser = new XmlParserLINQ();
+            var document = parser.ParseFormat(r);
             foreach (var p in parsers) {
-                p.Parse(xml, results);
+                p.Parse(document, results);
             }
 
             return results;

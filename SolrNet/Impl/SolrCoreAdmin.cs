@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using SolrNet.Commands.Cores;
+using SolrNet.Impl.FormatParser;
 
 namespace SolrNet.Impl {
     /// <summary>
@@ -147,8 +148,8 @@ namespace SolrNet.Impl {
         /// <returns></returns>
         public ResponseHeader SendAndParseHeader(ISolrCommand cmd) {
             var r = Send(cmd);
-            var xml = XDocument.Parse(r);
-            return headerParser.Parse(xml);
+            var document = new XmlParserLINQ();
+            return headerParser.Parse(document.ParseFormat(r));
         }
 
         /// <summary>

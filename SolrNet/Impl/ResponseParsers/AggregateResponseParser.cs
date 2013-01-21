@@ -10,9 +10,10 @@ namespace SolrNet.Impl.ResponseParsers {
             this.parsers = parsers;
         }
 
-        public void Parse(XDocument xml, AbstractSolrQueryResults<T> results) {
+        public void Parse(SolrResponseDocument document, AbstractSolrQueryResults<T> results)
+        {
             foreach (var p in parsers)
-                p.Parse(xml, results);
+                p.Parse(document, results);
         }
     }
 }

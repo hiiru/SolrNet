@@ -5,10 +5,10 @@ using SolrNet.Impl;
 
 namespace SolrNet.Tests.Mocks {
     public class MSolrHeaderResponseParser : ISolrHeaderResponseParser {
-        public MFunc<XDocument, ResponseHeader> parse;
+        public MFunc<SolrResponseDocument, ResponseHeader> parse;
 
-        public ResponseHeader Parse(XDocument response) {
-            return parse.Invoke(response);
+        public ResponseHeader Parse(SolrResponseDocument doc) {
+            return parse.Invoke(doc);
         }
     }
 }

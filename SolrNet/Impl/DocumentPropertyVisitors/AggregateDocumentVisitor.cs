@@ -32,7 +32,8 @@ namespace SolrNet.Impl.DocumentPropertyVisitors {
             this.visitors = visitors;
         }
 
-        public void Visit(object doc, string fieldName, XElement field) {
+        public void Visit(object doc, string fieldName, SolrResponseDocumentNode field)
+        {
             foreach (var v in visitors) {
                 v.Visit(doc, fieldName, field);
             }

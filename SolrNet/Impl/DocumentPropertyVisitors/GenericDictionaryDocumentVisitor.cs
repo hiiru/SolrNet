@@ -91,7 +91,8 @@ namespace SolrNet.Impl.DocumentPropertyVisitors {
             return k.Substring(fieldName.Length);
         }
 
-        public void Visit(object doc, string fieldName, XElement field) {
+        public void Visit(object doc, string fieldName, SolrResponseDocumentNode field)
+        {
             var thisField = memoGetThisField(doc.GetType(), fieldName);
             if (thisField == null)
                 return;
@@ -102,7 +103,7 @@ namespace SolrNet.Impl.DocumentPropertyVisitors {
             var keyType = typeArgs[0];
             var valueType = typeArgs[1];
             var dict = thisField.Property.GetValue(doc, null) ?? NewDictionary(typeArgs);
-            var key = GetKeyToUse(field.Attribute("name").Value, thisFieldName);
+            var key = GetKeyToUse(field.Name, thisFieldName);
             var value = parser.Parse(field, valueType);
             SetKV(dict, ConvertTo(key, keyType), value);
             thisField.Property.SetValue(doc, dict, null);

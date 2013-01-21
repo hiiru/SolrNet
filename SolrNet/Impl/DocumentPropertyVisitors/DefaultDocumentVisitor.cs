@@ -35,7 +35,8 @@ namespace SolrNet.Impl.DocumentPropertyVisitors {
             });
         }
 
-        public void Visit(object doc, string fieldName, XElement field) {
+        public void Visit(object doc, string fieldName, SolrResponseDocumentNode field)
+        {
             visitor.Visit(doc, fieldName, field);
         }
     }

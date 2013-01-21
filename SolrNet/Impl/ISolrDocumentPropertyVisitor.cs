@@ -29,6 +29,6 @@ namespace SolrNet.Impl {
         /// <param name="doc">Document object</param>
         /// <param name="fieldName">Solr field name</param>
         /// <param name="field">Raw XML Solr field</param>
-        void Visit(object doc, string fieldName, XElement field);
+        void Visit(object doc, string fieldName, SolrResponseDocumentNode field);
     }
 }

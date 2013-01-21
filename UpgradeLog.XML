@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="SolrNet">
+</Property><Property Name="Solution File" Value="C:\Projects\tmp\SolrNet\SolrNet\SolrNet.sln">
+</Property><Property Name="Date" Value="Mittwoch, 16. Januar 2013">
+</Property><Property Name="Time" Value="11:28">
+</Property></Properties><Event ErrorLevel="0" Project="SolrNet" Source="SolrNet\SolrNet.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="SolrNet" Source="SolrNet\SolrNet.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="SolrNet.Tests" Source="SolrNet.Tests\SolrNet.Tests.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="SolrNet.Tests" Source="SolrNet.Tests\SolrNet.Tests.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="HttpWebAdapters" Source="HttpWebAdapters\HttpWebAdapters.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="HttpWebAdapters" Source="HttpWebAdapters\HttpWebAdapters.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="SolrNet.DSL" Source="SolrNet.DSL\SolrNet.DSL.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="SolrNet.DSL" Source="SolrNet.DSL\SolrNet.DSL.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="SolrNet.DSL.Tests" Source="SolrNet.DSL.Tests\SolrNet.DSL.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="SolrNet.DSL.Tests" Source="SolrNet.DSL.Tests\SolrNet.DSL.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Castle.Facilities.SolrNetIntegration" Source="Castle.Facilities.SolrNetIntegration\Castle.Facilities.SolrNetIntegration.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Castle.Facilities.SolrNetIntegration" Source="Castle.Facilities.SolrNetIntegration\Castle.Facilities.SolrNetIntegration.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Castle.Facilities.SolrNetIntegration.Tests" Source="Castle.Facilities.SolrNetIntegration.Tests\Castle.Facilities.SolrNetIntegration.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Castle.Facilities.SolrNetIntegration.Tests" Source="Castle.Facilities.SolrNetIntegration.Tests\Castle.Facilities.SolrNetIntegration.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Ninject.Integration.SolrNet.Tests" Source="Ninject.Integration.SolrNet.Tests\Ninject.Integration.SolrNet.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Ninject.Integration.SolrNet.Tests" Source="Ninject.Integration.SolrNet.Tests\Ninject.Integration.SolrNet.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Ninject.Integration.SolrNet" Source="Ninject.Integration.SolrNet\Ninject.Integration.SolrNet.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Ninject.Integration.SolrNet" Source="Ninject.Integration.SolrNet\Ninject.Integration.SolrNet.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="NHibernate.SolrNet.Tests" Source="NHibernate.SolrNet.Tests\NHibernate.SolrNet.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="NHibernate.SolrNet.Tests" Source="NHibernate.SolrNet.Tests\NHibernate.SolrNet.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="NHibernate.SolrNet" Source="NHibernate.SolrNet\NHibernate.SolrNet.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="NHibernate.SolrNet" Source="NHibernate.SolrNet\NHibernate.SolrNet.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="StructureMap.SolrNetIntegration" Source="StructureMap.SolrNetIntegration\StructureMap.SolrNetIntegration.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="StructureMap.SolrNetIntegration" Source="StructureMap.SolrNetIntegration\StructureMap.SolrNetIntegration.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="StructureMap.SolrNetIntegration.Tests" Source="StructureMap.SolrNetIntegration.Tests\StructureMap.SolrNetIntegration.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="StructureMap.SolrNetIntegration.Tests" Source="StructureMap.SolrNetIntegration.Tests\StructureMap.SolrNetIntegration.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="AutofacContrib.SolrNet" Source="AutofacContrib.SolrNet\AutofacContrib.SolrNet.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="AutofacContrib.SolrNet" Source="AutofacContrib.SolrNet\AutofacContrib.SolrNet.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="AutofacContrib.SolrNet.Tests" Source="AutofacContrib.SolrNet.Tests\AutofacContrib.SolrNet.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="AutofacContrib.SolrNet.Tests" Source="AutofacContrib.SolrNet.Tests\AutofacContrib.SolrNet.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Unity.SolrNetIntegration" Source="Unity.SolrNetIntegration\Unity.SolrNetIntegration.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Unity.SolrNetIntegration" Source="Unity.SolrNetIntegration\Unity.SolrNetIntegration.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="Unity.SolrNetIntegration.Tests" Source="Unity.SolrNetIntegration.Tests\Unity.SolrNetIntegration.Tests.csproj" Description="The project file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="Unity.SolrNetIntegration.Tests" Source="Unity.SolrNetIntegration.Tests\Unity.SolrNetIntegration.Tests.csproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="" Source="SolrNet.sln" Description="The solution file does not require conversion.">
+</Event><Event ErrorLevel="3" Project="" Source="SolrNet.sln" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="SolrNet.Tests" Source="SolrNet.Tests\SolrNet.Tests.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

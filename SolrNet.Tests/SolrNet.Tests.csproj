@@ -12,11 +12,12 @@
     <AssemblyName>SolrNet.Tests</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
+    <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -29,7 +30,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -59,18 +59,14 @@
     <Reference Include="Castle.Windsor">
       <HintPath>..\lib\Castle.Windsor.dll</HintPath>
     </Reference>
-    <Reference Include="Gallio, Version=3.2.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\Gallio.dll</HintPath>
-    </Reference>
+    <Reference Include="Gallio, Version=3.4.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL" />
     <Reference Include="log4net">
       <Name>log4net</Name>
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="MbUnit, Version=3.2.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
+    <Reference Include="MbUnit, Version=3.4.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\MbUnit.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -207,6 +203,7 @@
   <ItemGroup>
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="Resources\responseWithExtractContent.xml">
       <SubType>Designer</SubType>
@@ -221,7 +218,9 @@
     <EmbeddedResource Include="Resources\solrSchemaMultiValuedName.xml" />
     <EmbeddedResource Include="Resources\responseWithHighlighting.xml" />
     <EmbeddedResource Include="Resources\responseWithHighlighting2.xml" />
-    <EmbeddedResource Include="Resources\response.xml" />
+    <EmbeddedResource Include="Resources\response.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\responseWithArrays.xml" />
     <EmbeddedResource Include="Resources\responseWithArraysSimple.xml" />
     <EmbeddedResource Include="Resources\responseWithDate.xml" />
@@ -235,7 +234,9 @@
     <EmbeddedResource Include="Resources\responseWithMoreLikeThis.xml" />
     <EmbeddedResource Include="Resources\responseWithStats.xml" />
     <EmbeddedResource Include="Resources\partialResponseWithDateFacet.xml" />
-    <EmbeddedResource Include="Resources\partialResponseWithDateFacetAndOther.xml" />
+    <EmbeddedResource Include="Resources\partialResponseWithDateFacetAndOther.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\responseWithGroupingOnInstock.xml" />
     <EmbeddedResource Include="Resources\responseWithFacetPivoting.xml" />
   </ItemGroup>
