@@ -13,14 +13,17 @@ namespace SolrNet.Impl {
         private readonly ISolrConnection connection;
         private readonly ISolrHeaderResponseParser headerParser;
         private readonly ISolrStatusResponseParser resultParser;
+	    private readonly IFormatParser formatParser;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SolrCoreAdmin"/> class.
         /// </summary>
-        public SolrCoreAdmin(ISolrConnection connection, ISolrHeaderResponseParser headerParser, ISolrStatusResponseParser resultParser) {
+		 public SolrCoreAdmin(ISolrConnection connection, ISolrHeaderResponseParser headerParser, ISolrStatusResponseParser resultParser, IFormatParser formatParser)
+		 {
             this.connection = connection;
-            this.headerParser = headerParser;
-            this.resultParser = resultParser;
+				this.headerParser = headerParser;
+				this.resultParser = resultParser;
+				this.formatParser = formatParser;
         }
 
         /// <summary>
@@ -148,8 +151,7 @@ namespace SolrNet.Impl {
         /// <returns></returns>
         public ResponseHeader SendAndParseHeader(ISolrCommand cmd) {
             var r = Send(cmd);
-            var document = new XmlParserLINQ();
-            return headerParser.Parse(document.ParseFormat(r));
+				return headerParser.Parse(formatParser.ParseFormat(r));
         }
 
         /// <summary>

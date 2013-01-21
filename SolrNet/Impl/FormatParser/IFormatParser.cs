@@ -27,10 +27,5 @@ namespace SolrNet.Impl.FormatParser
         /// <param name="data">Request data</param>
         /// <returns>SolrResponseData for the Request</returns>
         SolrResponseDocument ParseFormat(string data);
-
-        // Stream instead of string? or additional?
-        //-> lazy vs open connection (+timeout risk)
-        //SolrResponseData ParseFormat(Stream data);
-
-    }
+		 }
 }

@@ -25,6 +25,7 @@ using SolrNet.Commands.Parameters;
 using SolrNet.Impl;
 using SolrNet.Impl.FacetQuerySerializers;
 using SolrNet.Impl.FieldSerializers;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Impl.QuerySerializers;
 using SolrNet.Tests.Mocks;
 using SolrNet.Utils;
@@ -50,7 +51,7 @@ namespace SolrNet.Tests {
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
 
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, serializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, serializer, null, null, new XmlParserLINQ());
             var r = queryExecuter.Execute(new SolrQuery(queryString), null);
             Assert.AreEqual(1, serializer.serialize.Calls);
         }
@@ -66,7 +67,7 @@ namespace SolrNet.Tests {
             var querySerializer = new SolrQuerySerializerStub(queryString);
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Expect(1);
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null, new XmlParserLINQ());
             var r = queryExecuter.Execute(new SolrQuery(queryString), new QueryOptions {
                 OrderBy = new[] { new SortOrder("id") }
             });
@@ -85,7 +86,7 @@ namespace SolrNet.Tests {
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
             var querySerializer = new SolrQuerySerializerStub(queryString);
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null, new XmlParserLINQ());
             var r = queryExecuter.Execute(new SolrQuery(queryString), new QueryOptions {
                 OrderBy = new[] {
                         new SortOrder("id", Order.ASC),
@@ -106,7 +107,7 @@ namespace SolrNet.Tests {
 
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null, new XmlParserLINQ());
             var r = queryExecuter.Execute(new SolrQuery(queryString), new QueryOptions {
                 Fields = new[] { "id", "name" },
             });
@@ -126,7 +127,7 @@ namespace SolrNet.Tests {
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
             var facetQuerySerializer = new DefaultFacetQuerySerializer(querySerializer, new DefaultFieldSerializer());
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, facetQuerySerializer, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, facetQuerySerializer, null, new XmlParserLINQ());
             queryExecuter.Execute(new SolrQuery(""), new QueryOptions {
                 Facet = new FacetParameters {
                     Queries = new ISolrFacetQuery[] {
@@ -151,7 +152,7 @@ namespace SolrNet.Tests {
 
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, serializer, facetQuerySerializer, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, serializer, facetQuerySerializer, null, new XmlParserLINQ());
             queryExecuter.Execute(new SolrQuery(""), new QueryOptions {
                 Facet = new FacetParameters {
                     Queries = new ISolrFacetQuery[] {
@@ -197,7 +198,7 @@ namespace SolrNet.Tests {
 
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null, new XmlParserLINQ());
             queryExecuter.Execute(new SolrQuery(""), new QueryOptions {
                 Highlight = new HighlightingParameters {
                     Fields = new[] { highlightedField },
@@ -223,7 +224,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void HighlightingWithFastVectorHighlighter() {
-            var e = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var e = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var p = e.GetHighlightingParameters(new QueryOptions {
                 Highlight = new HighlightingParameters {
                     Fields = new[] {"a"},
@@ -251,7 +252,8 @@ namespace SolrNet.Tests {
 
             var parser = new MSolrAbstractResponseParser<TestDocument>();
             parser.parse &= x => x.Stub();
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null) {
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(parser, conn, querySerializer, null, null, new XmlParserLINQ())
+				{
                 DefaultRows = 10,
             };
             queryExecuter.Execute(SolrQuery.All, new QueryOptions {
@@ -264,7 +266,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void SpellChecking() {
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetSpellCheckingParameters(new QueryOptions {
                 SpellCheck = new SpellCheckingParameters {
                     Query = "hell",
@@ -439,7 +441,7 @@ namespace SolrNet.Tests {
         [Test]
         public void GetAllParameters_with_spelling() {
             var querySerializer = new SolrQuerySerializerStub("*:*");
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetAllParameters(SolrQuery.All, new QueryOptions {
                 SpellCheck = new SpellCheckingParameters {
                     Query = "hell",
@@ -464,7 +466,7 @@ namespace SolrNet.Tests {
         [Test]
         public void MoreLikeThis() {
             var querySerializer = new SolrQuerySerializerStub("apache");
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetAllParameters(new SolrQuery("apache"), new QueryOptions {
                 MoreLikeThis = new MoreLikeThisParameters(new[] { "manu", "cat" }) {
                     MinDocFreq = 1,
@@ -480,7 +482,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void GetMoreLikeThisParameters() {
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetMoreLikeThisParameters(
                 new MoreLikeThisParameters(new[] { "field1", "field2" }) {
                     Boost = true,
@@ -509,7 +511,7 @@ namespace SolrNet.Tests {
         [Test]
         public void GetAllParameters_mlt_with_field_query() {
             var serializer = new DefaultQuerySerializer(new DefaultFieldSerializer());
-            var qe = new SolrQueryExecuter<TestDocument>(null, null, serializer, null, null);
+				var qe = new SolrQueryExecuter<TestDocument>(null, null, serializer, null, null, new XmlParserLINQ());
             var p = qe.GetAllMoreLikeThisHandlerParameters(
                 new SolrMoreLikeThisHandlerQuery(new SolrQueryByField("id", "1234")),
                 new MoreLikeThisHandlerQueryOptions(
@@ -534,7 +536,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void GetAllParameters_mlt_with_stream_body_query() {
-            var qe = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var qe = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var p = qe.GetAllMoreLikeThisHandlerParameters(
                 new SolrMoreLikeThisHandlerStreamBodyQuery("one two three"),
                 new MoreLikeThisHandlerQueryOptions(
@@ -554,7 +556,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void GetAllParameters_mlt_with_stream_url_query() {
-            var qe = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var qe = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var p = qe.GetAllMoreLikeThisHandlerParameters(
                 new SolrMoreLikeThisHandlerStreamUrlQuery("http://wiki.apache.org/solr/MoreLikeThisHandler"),
                 new MoreLikeThisHandlerQueryOptions(
@@ -576,7 +578,7 @@ namespace SolrNet.Tests {
         public void FacetFieldOptions() {
             var querySerializer = new SolrQuerySerializerStub("q");
             var facetQuerySerializer = new DefaultFacetQuerySerializer(querySerializer, null);
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, facetQuerySerializer, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, facetQuerySerializer, null, new XmlParserLINQ());
             var facetOptions = queryExecuter.GetFacetFieldOptions(
                 new FacetParameters {
                     Queries = new List<ISolrFacetQuery> {
@@ -601,7 +603,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void StatsOptions() {
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null);
+			  var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, null, null, null, new XmlParserLINQ());
             var statsOptions = queryExecuter.GetStatsQueryOptions(new QueryOptions {
                 Stats = new StatsParameters()
                     .AddField("popularity")
@@ -623,7 +625,7 @@ namespace SolrNet.Tests {
         [Test]
         public void ExtraParams() {
             var querySerializer = new SolrQuerySerializerStub("123123");
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetAllParameters(new SolrQuery("123123"), new QueryOptions {
                 ExtraParams = new Dictionary<string, string> {
                             {"qt", "geo"},
@@ -640,7 +642,7 @@ namespace SolrNet.Tests {
         [Test]
         public void GetClusteringParameters() {
             var querySerializer = new SolrQuerySerializerStub("apache");
-            var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null);
+				var queryExecuter = new SolrQueryExecuter<TestDocument>(null, null, querySerializer, null, null, new XmlParserLINQ());
             var p = queryExecuter.GetAllParameters(new SolrQuery("apache"), new QueryOptions {
                 Clustering = new ClusteringParameters {
                     Title = "headline",

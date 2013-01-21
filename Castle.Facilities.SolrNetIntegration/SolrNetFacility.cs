@@ -26,6 +26,7 @@ using SolrNet.Impl.DocumentPropertyVisitors;
 using SolrNet.Impl.FacetQuerySerializers;
 using SolrNet.Impl.FieldParsers;
 using SolrNet.Impl.FieldSerializers;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Impl.QuerySerializers;
 using SolrNet.Impl.ResponseParsers;
 using SolrNet.Mapping;
@@ -237,7 +238,7 @@ namespace Castle.Facilities.SolrNetIntegration {
         /// <param name="conn"></param>
         /// <returns></returns>
         public ISolrCoreAdmin BuildCoreAdmin(ISolrConnection conn) {
-            return new SolrCoreAdmin(conn, Kernel.Resolve<ISolrHeaderResponseParser>(), Kernel.Resolve<ISolrStatusResponseParser>());            
+			  return new SolrCoreAdmin(conn, Kernel.Resolve<ISolrHeaderResponseParser>(), Kernel.Resolve<ISolrStatusResponseParser>(), Kernel.Resolve<IFormatParser>());            
         }
 
         private static void ValidateUrl(string s) {

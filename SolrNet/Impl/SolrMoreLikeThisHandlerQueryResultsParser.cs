@@ -4,15 +4,17 @@ using SolrNet.Impl.FormatParser;
 namespace SolrNet.Impl {
     public class SolrMoreLikeThisHandlerQueryResultsParser<T> : ISolrMoreLikeThisHandlerQueryResultsParser<T> {
         private readonly ISolrAbstractResponseParser<T>[] parsers;
+	    private readonly IFormatParser formatParser;
 
-        public SolrMoreLikeThisHandlerQueryResultsParser(ISolrAbstractResponseParser<T>[] parsers) {
+		 public SolrMoreLikeThisHandlerQueryResultsParser(ISolrAbstractResponseParser<T>[] parsers, IFormatParser formatParser)
+		 {
             this.parsers = parsers;
-        }
+			 this.formatParser = formatParser;
+		 }
 
         public SolrMoreLikeThisHandlerResults<T> Parse(string r) {
             var results = new SolrMoreLikeThisHandlerResults<T>();
-            var parser = new XmlParserLINQ();
-            var document = parser.ParseFormat(r);
+				var document = formatParser.ParseFormat(r);
             foreach (var p in parsers) {
                 p.Parse(document, results);
             }

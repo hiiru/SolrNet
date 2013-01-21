@@ -2,6 +2,7 @@
 using System.Configuration;
 using MbUnit.Framework;
 using SolrNet.Impl;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Impl.ResponseParsers;
 
 namespace SolrNet.Tests {
@@ -31,12 +32,12 @@ namespace SolrNet.Tests {
         http://localhost:8983/solr/admin/cores?action=UNLOAD&core=core0
         */
 
-        private static readonly string solrUrl = ConfigurationManager.AppSettings["solr"];
-        private const string instanceDir = "/apps/solr";
+		 private static readonly string solrUrl = ConfigurationManager.AppSettings["solr"] ?? "http://localhost:8983/solr";
+        private const string instanceDir = "/";
 
         [Test]
         public void GetStatusForAllCores() {
-            var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser());
+			  var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var results = solrCoreAdmin.Status();
             Assert.IsNotEmpty(results);
@@ -50,10 +51,15 @@ namespace SolrNet.Tests {
             return new SolrStatusResponseParser();
         }
 
+		  private IFormatParser GetFormatParser()
+		  {
+			  return new XmlParserLINQ();
+		  }
+
         [Test]
         public void Create() {
             var coreName = "core-new";
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser(),GetFormatParser() );
 
             try {
                 var createResponseHeader = solrCoreAdmin.Create(coreName, null, null, null, null);
@@ -72,7 +78,7 @@ namespace SolrNet.Tests {
         [Test]
         public void GetStatusForNamedCore() {
             var coreName = "core-new";
-            var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser());
+				var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var results = solrCoreAdmin.Status(coreName);
             Assert.IsNotEmpty(results[0].Name);
@@ -82,7 +88,7 @@ namespace SolrNet.Tests {
         [Test]
         public void ReloadCore() {
             var coreName = "core-new";
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+				var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var reloadResponseHeader = solrCoreAdmin.Reload(coreName);
             Assert.AreEqual(reloadResponseHeader.Status, 0);
@@ -91,7 +97,7 @@ namespace SolrNet.Tests {
         [Test]
         public void Alias() {
             var coreName = "core-new";
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+				var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var aliasResponseHeader = solrCoreAdmin.Alias(coreName, "corefoo");
             Assert.AreEqual(aliasResponseHeader.Status, 0);
@@ -100,7 +106,7 @@ namespace SolrNet.Tests {
         [Test]
         public void CreateSwapCore() {
             var coreName = "core-swap";
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+				var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var createResponseHeader = solrCoreAdmin.Create(coreName, instanceDir);
             Assert.AreEqual(createResponseHeader.Status, 0);
@@ -112,7 +118,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void SwapCores() {
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+			  var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var swapResponseHeader = solrCoreAdmin.Swap("core-new", "core-swap");
             Assert.AreEqual(swapResponseHeader.Status, 0);
@@ -120,7 +126,7 @@ namespace SolrNet.Tests {
 
         [Test]
         public void Unload() {
-            var solrCoreAdmin = new SolrCoreAdmin( new SolrConnection( solrUrl ), GetHeaderParser(), GetStatusResponseParser() );
+			  var solrCoreAdmin = new SolrCoreAdmin(new SolrConnection(solrUrl), GetHeaderParser(), GetStatusResponseParser(), GetFormatParser());
 
             var swapUnloadResponseHeader = solrCoreAdmin.Unload("core-swap", true);
             Assert.AreEqual(swapUnloadResponseHeader.Status, 0);

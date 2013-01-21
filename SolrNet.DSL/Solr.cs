@@ -22,6 +22,7 @@ using SolrNet.Commands;
 using SolrNet.Commands.Parameters;
 using SolrNet.DSL.Impl;
 using SolrNet.Impl;
+using SolrNet.Impl.FormatParser;
 
 namespace SolrNet.DSL {
     /// <summary>
@@ -112,7 +113,8 @@ namespace SolrNet.DSL {
                 Connection,
                 ServiceLocator.Current.GetInstance<ISolrQuerySerializer>(),
                 ServiceLocator.Current.GetInstance<ISolrFacetQuerySerializer>(),
-                ServiceLocator.Current.GetInstance<ISolrMoreLikeThisHandlerQueryResultsParser<T>>());
+                ServiceLocator.Current.GetInstance<ISolrMoreLikeThisHandlerQueryResultsParser<T>>(),
+					 ServiceLocator.Current.GetInstance<IFormatParser>());
         }
 
         /// <summary>

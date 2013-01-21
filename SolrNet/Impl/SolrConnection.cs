@@ -23,6 +23,7 @@ using System.Text;
 using HttpWebAdapters;
 using HttpWebAdapters.Adapters;
 using SolrNet.Exceptions;
+using SolrNet.Impl.FormatParser;
 using SolrNet.Utils;
 using HttpUtility = SolrNet.Utils.HttpUtility;
 
@@ -80,8 +81,9 @@ namespace SolrNet.Impl {
 
         public string Post(string relativeUrl, string s) {
             var bytes = Encoding.UTF8.GetBytes(s);
+	        var formatParser = Startup.Container.GetInstance<IFormatParser>();
             using (var content = new MemoryStream(bytes))
-                return PostStream(relativeUrl, "text/xml; charset=utf-8", content, null);
+                return PostStream(relativeUrl, formatParser.ContentType, content, null);
         }
 
         public string PostStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> parameters) {

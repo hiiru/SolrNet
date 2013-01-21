@@ -830,7 +830,7 @@ namespace SolrNet.Tests
 		public void ParseInterestingTermsList()
 		{
 			var innerParser = new InterestingTermsResponseParser<Product>();
-			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<Product>(new[] { innerParser });
+			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<Product>(new[] { innerParser }, new XmlParserLINQ());
 			var response = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.responseWithInterestingTermsList.xml");
 			var results = parser.Parse(response);
 
@@ -845,7 +845,7 @@ namespace SolrNet.Tests
 		public void ParseInterestingTermsDetails()
 		{
 			var innerParser = new InterestingTermsResponseParser<Product>();
-			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<Product>(new[] { innerParser });
+			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<Product>(new[] { innerParser }, new XmlParserLINQ());
 			var response = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.responseWithInterestingTermsDetails.xml");
 			var results = parser.Parse(response);
 
@@ -860,7 +860,7 @@ namespace SolrNet.Tests
 		public void ParseMlthMatch()
 		{
 			var innerParser = new MoreLikeThisHandlerMatchResponseParser<TestDocWithGuid>(GetDocumentParser<TestDocWithGuid>());
-			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<TestDocWithGuid>(new[] { innerParser });
+			var parser = new SolrMoreLikeThisHandlerQueryResultsParser<TestDocWithGuid>(new[] { innerParser }, new XmlParserLINQ());
 			var response = EmbeddedResource.GetEmbeddedString(GetType(), "Resources.responseWithInterestingTermsDetails.xml");
 			var results = parser.Parse(response);
 

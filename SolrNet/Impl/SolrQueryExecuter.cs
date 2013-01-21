@@ -37,6 +37,7 @@ namespace SolrNet.Impl {
         private readonly ISolrConnection connection;
         private readonly ISolrQuerySerializer querySerializer;
         private readonly ISolrFacetQuerySerializer facetQuerySerializer;
+	    private readonly IFormatParser formatParser;
 
         /// <summary>
         /// When the row count is not defined, use this row count by default
@@ -76,12 +77,13 @@ namespace SolrNet.Impl {
         /// <param name="querySerializer"></param>
         /// <param name="facetQuerySerializer"></param>
         /// <param name="mlthResultParser"></param>
-        public SolrQueryExecuter(ISolrAbstractResponseParser<T> resultParser, ISolrConnection connection, ISolrQuerySerializer querySerializer, ISolrFacetQuerySerializer facetQuerySerializer, ISolrMoreLikeThisHandlerQueryResultsParser<T> mlthResultParser) {
+        public SolrQueryExecuter(ISolrAbstractResponseParser<T> resultParser, ISolrConnection connection, ISolrQuerySerializer querySerializer, ISolrFacetQuerySerializer facetQuerySerializer, ISolrMoreLikeThisHandlerQueryResultsParser<T> mlthResultParser, IFormatParser formatParser) {
             this.resultParser = resultParser;
             this.mlthResultParser = mlthResultParser;
             this.connection = connection;
             this.querySerializer = querySerializer;
             this.facetQuerySerializer = facetQuerySerializer;
+	        this.formatParser = formatParser;
             DefaultRows = ConstDefaultRows;
             Handler = DefaultHandler;
             MoreLikeThisHandler = DefaultMoreLikeThisHandler;
@@ -585,8 +587,7 @@ namespace SolrNet.Impl {
             var param = GetAllParameters(q, options);
             var results = new SolrQueryResults<T>();
             var r = connection.Get(Handler, param);
-            var parser = new XmlParserLINQ();
-            var doc = parser.ParseFormat(r);
+				var doc = formatParser.ParseFormat(r);
             resultParser.Parse(doc, results);
             return results;
         }

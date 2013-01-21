@@ -36,8 +36,9 @@ namespace SolrNet.Impl {
         private readonly ISolrQuerySerializer querySerializer;
         private readonly ISolrDIHStatusParser dihStatusParser;
         private readonly ISolrExtractResponseParser extractResponseParser;
+	    private readonly IFormatParser formatParser;
 
-        public SolrBasicServer(ISolrConnection connection, ISolrQueryExecuter<T> queryExecuter, ISolrDocumentSerializer<T> documentSerializer, ISolrSchemaParser schemaParser, ISolrHeaderResponseParser headerParser, ISolrQuerySerializer querySerializer, ISolrDIHStatusParser dihStatusParser, ISolrExtractResponseParser extractResponseParser) {
+        public SolrBasicServer(ISolrConnection connection, ISolrQueryExecuter<T> queryExecuter, ISolrDocumentSerializer<T> documentSerializer, ISolrSchemaParser schemaParser, ISolrHeaderResponseParser headerParser, ISolrQuerySerializer querySerializer, ISolrDIHStatusParser dihStatusParser, ISolrExtractResponseParser extractResponseParser, IFormatParser formatParser) {
             this.connection = connection;
             this.extractResponseParser = extractResponseParser;
             this.queryExecuter = queryExecuter;
@@ -46,6 +47,7 @@ namespace SolrNet.Impl {
             this.headerParser = headerParser;
             this.querySerializer = querySerializer;
             this.dihStatusParser = dihStatusParser;
+	        this.formatParser = formatParser;
         }
 
         public ResponseHeader Commit(CommitOptions options) {
@@ -105,14 +107,12 @@ namespace SolrNet.Impl {
 
         public ExtractResponse SendAndParseExtract(ISolrCommand cmd) {
             var r = Send(cmd);
-            var document = new XmlParserLINQ();
-            return extractResponseParser.Parse(document.ParseFormat(r));
+			  return extractResponseParser.Parse(formatParser.ParseFormat(r));
         }
 
         public ResponseHeader SendAndParseHeader(ISolrCommand cmd) {
             var r = Send(cmd);
-            var document = new XmlParserLINQ();
-            return headerParser.Parse(document.ParseFormat(r));
+			  return headerParser.Parse(formatParser.ParseFormat(r));
         }
 
         public ResponseHeader Ping() {

@@ -25,7 +25,7 @@ namespace SolrNet.Impl.FormatParser
 		public SolrResponseDocument ParseFormat(string data)
 		{
 			int specialValueCount = 0;
-			var document = new SolrResponseDocument("xml");
+			var document = new SolrResponseDocument(wt);
 			var xml = XDocument.Parse(data);
 			if (xml == null) throw new ArgumentException("Invalid XML format", "data");
 			var xmlResponse = xml.Element("response");

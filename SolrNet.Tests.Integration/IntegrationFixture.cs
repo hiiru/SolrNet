@@ -1,13 +1,12 @@
 ﻿#region license
-
 // Copyright (c) 2007-2010 Mauricio Scheffer
-//
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 //      http://www.apache.org/licenses/LICENSE-2.0
-//
+//  
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,39 +28,46 @@ using SolrNet.Impl;
 using SolrNet.Tests.Integration.Sample;
 using SolrNet.Tests.Utils;
 
-namespace SolrNet.Tests.Integration.Sample
+namespace SolrNet.Tests.Integration
 {
-	    public class IntegrationFixture {
-        private static readonly string serverURL = ConfigurationManager.AppSettings["solr"];
-        private static readonly Lazy<object> init = new Lazy<object>(() => {
-            Startup.Init<Product>(new LoggingConnection(new SolrConnection(serverURL)));
-            return null;
-        });
-        private static readonly Lazy<object> initDict = new Lazy<object>(() => {
-            Startup.Init<Dictionary<string, object>>(new LoggingConnection(new SolrConnection(serverURL)));
-            return null;
-        });
+	[TestFixture]
+	[Category("Integration")]
+	public class IntegrationFixture
+	{
+		private static readonly string serverURL = ConfigurationManager.AppSettings["solr"] ?? "http://localhost:8983/solr";
+		private static readonly Lazy<object> init = new Lazy<object>(() =>
+		{
+			Startup.Init<Product>(new LoggingConnection(new SolrConnection(serverURL)));
+			return null;
+		});
+		private static readonly Lazy<object> initDict = new Lazy<object>(() =>
+		{
+			Startup.Init<Dictionary<string, object>>(new LoggingConnection(new SolrConnection(serverURL)));
+			return null;
+		});
 
-			 
-        [SetUp]
-        public void Setup() {
-            var x = init.Value;
-            var solr = ServiceLocator.Current.GetInstance<ISolrOperations<Product>>();
-            solr.Delete(SolrQuery.All);
-            solr.Commit();
-        }
+		[SetUp]
+		public void Setup()
+		{
+			var x = init.Value;
+			var solr = ServiceLocator.Current.GetInstance<ISolrOperations<Product>>();
+			solr.Delete(SolrQuery.All);
+			solr.Commit();
+		}
 
-        [Test]
-        public void Add_then_query() {
-            const string name = "Samsuñg SpinPoint P120 SP2514N - hárd drívè - 250 GB - ÁTÀ-133";
-            var guid = new Guid("{78D734ED-12F8-44E0-8AA3-8CA3F353998D}");
-            var p = new Product {
-                Id = "SP2514N",
-                Guid = guid,
-                Name = name,
-                // testing UTF
-                Manufacturer = "Samsung Electronics Co. Ltd.",
-                Categories = new[] {
+		[Test]
+		public void Add_then_query()
+		{
+			const string name = "Samsuñg SpinPoint P120 SP2514N - hárd drívè - 250 GB - ÁTÀ-133";
+			var guid = new Guid("{78D734ED-12F8-44E0-8AA3-8CA3F353998D}");
+			var p = new Product
+			{
+				Id = "SP2514N",
+				Guid = guid,
+				Name = name,
+				// testing UTF
+				Manufacturer = "Samsung Electronics Co. Ltd.",
+				Categories = new[] {
                     "electronics",
                     "hard drive",
                 },
@@ -196,6 +202,7 @@ namespace SolrNet.Tests.Integration.Sample
 
 			Assert.AreEqual(0, productsAfterDelete.Count);
 		}
+
 
 		[Test]
 		public void Highlighting()
@@ -362,7 +369,6 @@ namespace SolrNet.Tests.Integration.Sample
 				{
 					MinDocFreq = 1,
 					MinTermFreq = 1,
-
 					//Count = 1,
 				},
 			});
@@ -387,7 +393,6 @@ namespace SolrNet.Tests.Integration.Sample
 				Stats = new StatsParameters
 				{
 					Facets = new[] { "inStock" },
-
 					// stats facet currently broken in Solr: https://issues.apache.org/jira/browse/SOLR-2976
 					//FieldsWithFacets = new Dictionary<string, ICollection<string>> {
 					//    {"popularity", new List<string> {"weight"}}
@@ -510,10 +515,10 @@ namespace SolrNet.Tests.Integration.Sample
 			Console.WriteLine("CollapsedDocuments.Count {0}", results.Collapsing.CollapsedDocuments.Count);
 		}
 
+
 		[Test]
 		public void FieldGrouping()
 		{
-			Add_then_query();
 			var solr = ServiceLocator.Current.GetInstance<ISolrBasicOperations<Product>>();
 			var results = solr.Query(SolrQuery.All, new QueryOptions
 			{
@@ -531,11 +536,12 @@ namespace SolrNet.Tests.Integration.Sample
 			Assert.GreaterThanOrEqualTo(results.Grouping["manu_exact"].Groups.Count, 1);
 		}
 
-		private static readonly Lazy<object> initLoose = new Lazy<object>(() =>
+		private static readonly System.Lazy<object> initLoose = new System.Lazy<object>(() =>
 		{
 			Startup.Init<ProductLoose>(new LoggingConnection(new SolrConnection(serverURL)));
 			return null;
 		});
+
 
 		[Test]
 		public void SemiLooseMapping()
@@ -617,6 +623,7 @@ namespace SolrNet.Tests.Integration.Sample
 			{
 				Console.WriteLine("Interesting term: {0} ({1})", t.Key, t.Value);
 			}
+
 		}
 	}
 }

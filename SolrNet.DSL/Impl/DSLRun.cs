@@ -19,6 +19,7 @@ using System.Linq;
 using Microsoft.Practices.ServiceLocation;
 using SolrNet.Commands.Parameters;
 using SolrNet.Impl;
+using SolrNet.Impl.FormatParser;
 
 namespace SolrNet.DSL.Impl {
     public class DSLRun<T> : IDSLRun<T> {
@@ -51,7 +52,8 @@ namespace SolrNet.DSL.Impl {
                 connection,
                 ServiceLocator.Current.GetInstance<ISolrQuerySerializer>(),
                 ServiceLocator.Current.GetInstance<ISolrFacetQuerySerializer>(),
-                ServiceLocator.Current.GetInstance<ISolrMoreLikeThisHandlerQueryResultsParser<T>>());
+                ServiceLocator.Current.GetInstance<ISolrMoreLikeThisHandlerQueryResultsParser<T>>(),
+					 ServiceLocator.Current.GetInstance<IFormatParser>());
         }
 
         public SolrQueryResults<T> Run() {
