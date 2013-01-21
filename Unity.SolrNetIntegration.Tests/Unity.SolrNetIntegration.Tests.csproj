@@ -47,9 +47,10 @@
   <ItemGroup>
     <Compile Include="Entity.cs" />
     <Compile Include="Entity2.cs" />
-    <Compile Include="MultiCoreTests.cs" />
+    <Compile Include="UnityMultiCoreFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegistryTests.cs" />
+    <Compile Include="UnityFixture.cs" />
+    <Compile Include="UnityIntegrationFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SolrNet\SolrNet.csproj">
