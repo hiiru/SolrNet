@@ -30,6 +30,11 @@ namespace SolrNet.Impl
 
 		public string Get(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters)
 		{
+			using (var sr = new StreamReader(GetAsStream(relativeUrl,parameters), Encoding.UTF8, true))
+				return sr.ReadToEnd();
+		}
+		public Stream GetAsStream(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters)
+		{
 			var u = new UriBuilder(serverUrl);
 			u.Path += relativeUrl;
 			var request = (HttpWebRequest)WebRequest.Create(u.Uri);
@@ -48,8 +53,7 @@ namespace SolrNet.Impl
 					sw.Write(qs);
 				using (var response = request.GetResponse())
 				using (var responseStream = response.GetResponseStream())
-				using (var sr = new StreamReader(responseStream, Encoding.UTF8, true))
-					return sr.ReadToEnd();
+					return responseStream;
 			}
 			catch (WebException e)
 			{

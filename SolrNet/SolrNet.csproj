@@ -89,6 +89,15 @@
     <Compile Include="Commands\Parameters\TermsSort.cs" />
     <Compile Include="Commands\Parameters\TermVectorParameters.cs" />
     <Compile Include="Impl\FieldParsers\LocationFieldParser.cs" />
+    <Compile Include="Impl\FormatParser\JavaBinParser.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\Converter.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\FastInputStream.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\FastOutputStream.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\JavaBinCodec.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\LinkedHashMap.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\NamedList.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\SolrDocument.cs" />
+    <Compile Include="Impl\FormatParser\JavaBin\SolrDocumentList.cs" />
     <Compile Include="Impl\QuerySerializers\QueryByFieldRegexSerializer.cs" />
     <Compile Include="Impl\FieldParsers\MoneyFieldParser.cs" />
     <Compile Include="Impl\FormatParser\IFormatParser.cs" />

@@ -41,11 +41,19 @@ namespace SolrNet {
         string PostStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> getParameters);
 
         /// <summary>
-        /// GETs from Solr
+        /// GETs from Solr as String
         /// </summary>
         /// <param name="relativeUrl">Path to get from</param>
         /// <param name="parameters">Query string parameters</param>
         /// <returns></returns>
         string Get(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters);
+
+		  /// <summary>
+		  /// GETs from Solr as Stream
+		  /// </summary>
+		  /// <param name="relativeUrl">Path to get from</param>
+		  /// <param name="parameters">Query string parameters</param>
+		  /// <returns></returns>
+		  Stream GetAsStream(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters);
     }
 }

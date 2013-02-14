@@ -15,6 +15,7 @@
 #endregion
 
 using System;
+using System.IO;
 
 namespace SolrNet.Impl {
     /// <summary>
@@ -35,7 +36,9 @@ namespace SolrNet.Impl {
         /// <summary>
         /// Response data
         /// </summary>
-        public string Data { get; private set; }
+        public byte[] Data { get; private set; }
+
+		  public string DataEncoding { get; private set; }
 
         /// <summary>
         /// HTTP-level Solr cache entry
@@ -43,10 +46,12 @@ namespace SolrNet.Impl {
         /// <param name="url">Full Solr query URL</param>
         /// <param name="eTag">Response ETag</param>
         /// <param name="data">Response data</param>
-        public SolrCacheEntity(string url, string eTag, string data) {
+		  public SolrCacheEntity(string url, string eTag, byte[] data, string encoding=null)
+		  {
             Url = url;
             ETag = eTag;
             Data = data;
+	        DataEncoding = encoding;
         }
     }
 }

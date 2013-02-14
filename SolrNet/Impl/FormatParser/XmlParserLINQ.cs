@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -56,6 +57,16 @@ namespace SolrNet.Impl.FormatParser
 			return document;
 		}
 
+		/// <summary>
+		/// Parses a Request into a SolrResponseData Object
+		/// </summary>
+		/// <param name="data">Request data</param>
+		/// <returns>SolrResponseData for the Request</returns>
+		public SolrResponseDocument ParseFormat(Stream data) {
+			using (StreamReader sr = new StreamReader(data))
+				return ParseFormat(sr.ReadToEnd());
+		}
+
 		protected SolrResponseDocumentNode GetNode(XElement node)
 		{
 			SolrResponseDocumentNodeType type;
@@ -101,7 +112,7 @@ namespace SolrNet.Impl.FormatParser
 			{
 				var attrName = node.Attribute("name");
 				if (attrName != null)
-					name = node.Attribute("name").Value;
+					name = attrName.Value;
 			}
 
 			var solrNode = new SolrResponseDocumentNode(name, type);

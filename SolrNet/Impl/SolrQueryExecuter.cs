@@ -586,7 +586,7 @@ namespace SolrNet.Impl {
         public SolrQueryResults<T> Execute(ISolrQuery q, QueryOptions options) {
             var param = GetAllParameters(q, options);
             var results = new SolrQueryResults<T>();
-            var r = connection.Get(Handler, param);
+            var r = connection.GetAsStream(Handler, param);
 				var doc = formatParser.ParseFormat(r);
             resultParser.Parse(doc, results);
             return results;

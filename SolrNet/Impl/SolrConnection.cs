@@ -34,6 +34,7 @@ namespace SolrNet.Impl {
     public class SolrConnection : ISolrConnection {
         private string serverURL;
         private string version = "2.2";
+		  public IFormatParser FormatParser { get; set; }
 
         /// <summary>
         /// HTTP cache implementation
@@ -80,13 +81,25 @@ namespace SolrNet.Impl {
         public int Timeout { get; set; }
 
         public string Post(string relativeUrl, string s) {
-            var bytes = Encoding.UTF8.GetBytes(s);
-	        var formatParser = Startup.Container.GetInstance<IFormatParser>();
-            using (var content = new MemoryStream(bytes))
-                return PostStream(relativeUrl, formatParser.ContentType, content, null);
+			  var bytes = Encoding.UTF8.GetBytes(s);
+			  string contentType = (FormatParser != null) ? FormatParser.ContentType : "text/xml; charset=utf-8";
+
+			  using (var content = new MemoryStream(bytes))
+				  return PostStream(relativeUrl, contentType, content, null);
         }
 
-        public string PostStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> parameters) {
+		  public string PostStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> parameters) {
+			  string encoding;
+			  using (var sr = new StreamReader(PostStream(relativeUrl, contentType, content, parameters, out encoding), TryGetEncoding(encoding), true))
+				  return sr.ReadToEnd();
+		  }
+	    public Stream PostStreamAsStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> parameters) {
+			 string encoding;
+		    return PostStream(relativeUrl, contentType, content, parameters, out encoding);
+	    }
+
+	    private Stream PostStream(string relativeUrl, string contentType, Stream content, IEnumerable<KeyValuePair<string, string>> parameters, out string encoding)
+		  {
             var u = new UriBuilder(serverURL);
             u.Path += relativeUrl;
             u.Query = GetQuery(parameters);
@@ -108,9 +121,9 @@ namespace SolrNet.Impl {
 
             try {
                 using (var postStream = request.GetRequestStream()) {
-                    CopyTo(content, postStream);
+						 CopyTo(content, postStream);
                 }
-                return GetResponse(request).Data;
+					 return new MemoryStream(GetResponse(request, out encoding).Data, false);
             } catch (WebException e) {
                 var msg = e.Message;
                 if (e.Response != null) {
@@ -129,10 +142,23 @@ namespace SolrNet.Impl {
                 output.Write(buffer, 0, read);
         }
 
-        public string Get(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters) {
+		  public string Get(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters)
+		  {
+			  string encoding;
+			  using (var sr = new StreamReader(GetAsStream(relativeUrl, parameters, out encoding), TryGetEncoding(encoding), true))
+				  return sr.ReadToEnd();
+		  }
+
+		  public Stream GetAsStream(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters) {
+
+			  string encoding;
+			  return GetAsStream(relativeUrl, parameters, out encoding);
+		  }
+
+	    public Stream GetAsStream(string relativeUrl, IEnumerable<KeyValuePair<string, string>> parameters, out string encoding) {
             var u = new UriBuilder(serverURL);
             u.Path += relativeUrl;
-            u.Query = GetQuery(parameters);
+				u.Query = GetQuery(parameters);
 
             var request = HttpWebRequestFactory.Create(u.Uri);
             request.Method = HttpWebRequestMethod.GET;
@@ -148,16 +174,17 @@ namespace SolrNet.Impl {
                 request.Timeout = Timeout;                
             }
             try {
-                var response = GetResponse(request);
+                var response = GetResponse(request, out encoding);
                 if (response.ETag != null)
-                    Cache.Add(new SolrCacheEntity(u.Uri.ToString(), response.ETag, response.Data));
-                return response.Data;
+                    Cache.Add(new SolrCacheEntity(u.Uri.ToString(), response.ETag, response.Data,encoding));
+					 return new MemoryStream(response.Data, false);
             } catch (WebException e) {
                 if (e.Response != null) {
                     using (e.Response) {
                         var r = new HttpWebResponseAdapter(e.Response);
                         if (r.StatusCode == HttpStatusCode.NotModified) {
-                            return cached.Data;
+	                        encoding = cached.DataEncoding;
+                            return new MemoryStream(cached.Data,false);
                         }
                         using (var s = e.Response.GetResponseStream())
                         using (var sr = new StreamReader(s)) {
@@ -175,7 +202,9 @@ namespace SolrNet.Impl {
         /// <param name="parameters"></param>
         /// <returns></returns>
         private string GetQuery(IEnumerable<KeyValuePair<string, string>> parameters) {
-            var param = new List<KeyValuePair<string, string>>();
+			  var param = new List<KeyValuePair<string, string>>();
+			  if (FormatParser != null)
+				  param.Add(new KeyValuePair<string, string>("wt", FormatParser.wt));
             if (parameters != null)
                 param.AddRange(parameters);
 
@@ -191,43 +220,52 @@ namespace SolrNet.Impl {
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        private SolrResponse GetResponse(IHttpWebRequest request) {
+        private SolrResponse GetResponse(IHttpWebRequest request, out string encoding) {
             using (var response = request.GetResponse()) {
                 var etag = response.Headers[HttpResponseHeader.ETag];
                 var cacheControl = response.Headers[HttpResponseHeader.CacheControl];
                 if (cacheControl != null && cacheControl.Contains("no-cache"))
                     etag = null; // avoid caching things marked as no-cache
-
-                return new SolrResponse(etag, ReadResponseToString(response));
+	            encoding = response.ContentEncoding;
+	            var ms = new MemoryStream();
+					CopyTo(response.GetResponseStream(),ms);
+               return new SolrResponse(etag, ms.ToArray());
             }
         }
 
-        /// <summary>
-        /// Reads the full stream from the response and returns the content as stream,
-        /// using the correct encoding.
-        /// </summary>
-        /// <param name="response">Web response from request to Solr</param>
-        /// <returns></returns>
-        private string ReadResponseToString(IHttpWebResponse response)
-        {
-            using (var responseStream = response.GetResponseStream())
-				using (var reader = new StreamReader(responseStream, TryGetEncoding(response))) {
-					return reader.ReadToEnd();
-            }
-        }
-
+		  /// <summary>
+		  /// Reads the full stream from the response and returns the content as stream,
+		  /// using the correct encoding.
+		  /// </summary>
+		  /// <param name="response">Web response from request to Solr</param>
+		  /// <returns></returns>
+		  //private string ReadResponseToString(IHttpWebResponse response)
+		  //{
+		  //	using (var responseStream = response.GetResponseStream())
+		  //	using (var reader = new StreamReader(responseStream, TryGetEncoding(response)))
+		  //	{
+		  //		return reader.ReadToEnd();
+		  //	}
+		  //}
+		 
         private struct SolrResponse {
             public string ETag { get; private set; }
-            public string Data { get; private set; }
-            public SolrResponse(string eTag, string data) : this() {
+
+				public byte[] Data { get; private set; }
+				public SolrResponse(string eTag, byte[] data)
+					: this()
+				{
                 ETag = eTag;
                 Data = data;
             }
         }
 
-        private Encoding TryGetEncoding(IHttpWebResponse response) {
+		  private Encoding TryGetEncoding(string encoding)
+		  {
+	        //prevent try/catch for obvious cases
+			  if (string.IsNullOrEmpty(encoding)) return Encoding.UTF8;
             try {
-                return Encoding.GetEncoding(response.CharacterSet);
+					return Encoding.GetEncoding(encoding);
             } catch {
                 return Encoding.UTF8;
             }

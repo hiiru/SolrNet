@@ -27,5 +27,12 @@ namespace SolrNet.Impl.FormatParser
         /// <param name="data">Request data</param>
         /// <returns>SolrResponseData for the Request</returns>
         SolrResponseDocument ParseFormat(string data);
+
+		  /// <summary>
+		  /// Parses a Request into a SolrResponseData Object
+		  /// </summary>
+		  /// <param name="data">Request data</param>
+		  /// <returns>SolrResponseData for the Request</returns>
+		  SolrResponseDocument ParseFormat(Stream data);
 		 }
 }
