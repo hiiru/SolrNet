@@ -171,9 +171,11 @@ namespace SolrNet.Impl.FormatParser.JavaBin
 				case DATE:
 					node.SolrType = SolrResponseDocumentNodeType.Date;
 					DateTime date;
-					try
-					{
-						date = utcDateTime.AddMilliseconds(dis.ReadLong()).ToLocalTime();
+					long timestamp = dis.ReadLong();
+					if (timestamp < -62135596800000)
+						timestamp = -62135596800000;
+					try {
+						date = utcDateTime.AddMilliseconds(timestamp).ToLocalTime();
 					}
 					catch
 					{
